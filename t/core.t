@@ -144,7 +144,11 @@ $gin->insert(@objs);
 
 {
     my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(foo)] ) );
+    is_deeply( [ @res ], [ $objs[0] ] );
+}
 
+{
+    my @res = $gin->query( MyTagQuery::Union->new( tags => [qw(foo)] ) );
     is_deeply( [ @res ], [ $objs[0] ] );
 }
 
@@ -161,5 +165,10 @@ $gin->insert(@objs);
 {
     my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(bar gorch)] ) );
     is_deeply( [ @res ], [ $objs[1] ] );
+}
+
+{
+    my @res = $gin->query( MyTagQuery::Union->new( tags => [qw(bar gorch)] ) );
+    is_deeply( [ sort @res ], [ sort @objs ] );
 }
 
