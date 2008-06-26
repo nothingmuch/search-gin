@@ -4,8 +4,8 @@ package Search::GIN::Query;
 use Moose::Role;
 
 requires qw(
-	gin_consistent
-	gin_extract_values
+    gin_consistent
+    gin_extract_values
 );
 
 __PACKAGE__
@@ -20,7 +20,7 @@ Search::GIN::Query -
 
 =head1 SYNOPSIS
 
-	use Search::GIN::Query;
+    use Search::GIN::Query;
 
 =head1 DESCRIPTION
 

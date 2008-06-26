@@ -17,7 +17,7 @@ Search::GIN::Driver::Pack -
 
 =head1 SYNOPSIS
 
-	use Search::GIN::Driver::Pack;
+    use Search::GIN::Driver::Pack;
 
 =head1 DESCRIPTION
 

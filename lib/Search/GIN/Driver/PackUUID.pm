@@ -10,13 +10,13 @@ use namespace::clean -except => [qw(meta)];
 with qw(Search::GIN::Driver);
 
 sub unpack_ids {
-	my ( $self, $str ) = @_;
-	set(unpack("(a16)*", $str));
+    my ( $self, $str ) = @_;
+    set(unpack("(a16)*", $str));
 }
 
 sub pack_ids {
-	my ( $self, $ids) = @_;
-	pack ("(a16)*", $ids->members);
+    my ( $self, $ids) = @_;
+    pack ("(a16)*", $ids->members);
 }
 
 __PACKAGE__
@@ -31,7 +31,7 @@ Search::GIN::Driver::PackUUID - UUID key packing
 
 =head1 SYNOPSIS
 
-	use Search::GIN::Driver::PackUUID;
+    use Search::GIN::Driver::PackUUID;
 
 =head1 DESCRIPTION
 
