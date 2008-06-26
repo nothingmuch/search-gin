@@ -24,6 +24,13 @@ use Test::TempDir;
         Search::GIN::Driver::PackUUID
     );
 
+    # AwareObjects means we delegate everything to Query and Indexable
+    # there's also Callbacks, and presumably custom impls
+
+    # PackUUID is because BerkeleyDB is ondisk
+    # it's an implementation of pack_ids and unpack_ids that uses unpack/pack
+    # on constant width strings
+
     # the only required method left after all these roles were added
     # we fake it here, but it should go to the storage backend
     sub ids_to_objects {
