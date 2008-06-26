@@ -82,6 +82,8 @@ use Test::TempDir;
         return $item->tags->superset($self->tags);
     }
 
+    __PACKAGE__->meta->make_immutable;
+
     package MyTagQuery::Union;
     use Moose;
 
@@ -92,6 +94,7 @@ use Test::TempDir;
         return $self->tags->intersection($item->tags)->size >= 1;
     }
 
+    __PACKAGE__->meta->make_immutable;
 
     # this is an indexable object
     package MyObject;
@@ -124,6 +127,8 @@ use Test::TempDir;
         my ( $self, $one, $two ) = @_;
         $one cmp $two;
     }
+
+    __PACKAGE__->meta->make_immutable;
 }
 
 
