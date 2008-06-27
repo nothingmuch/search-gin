@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Search::GIN::AwareObjects;
+package Search::GIN::DelegateToIndexed;
 use Moose::Role;
 
 with qw(Search::GIN::Core);
@@ -34,11 +34,11 @@ __END__
 
 =head1 NAME
 
-Search::GIN::AwareObjects - 
+Search::GIN::DelegateToIndexed - 
 
 =head1 SYNOPSIS
 
-    use Search::GIN::AwareObjects;
+    use Search::GIN::DelegateToIndexed;
 
 =head1 DESCRIPTION
 

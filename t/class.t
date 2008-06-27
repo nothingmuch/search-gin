@@ -15,7 +15,7 @@ use Test::TempDir;
             Search::GIN::Driver::Hash
             Search::GIN::SelfIDs
         ),
-        'Search::GIN::AwareObjects' => { excludes => [qw(objects_to_ids)] },
+        'Search::GIN::DelegateToIndexed' => { excludes => [qw(objects_to_ids)] },
     );
 
     # you create the query objects, the GIN implementation uses them

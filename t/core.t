@@ -13,18 +13,18 @@ use Test::TempDir;
 
     # in memory index:
     #with qw(
-    #   Search::GIN::AwareObjects
+    #   Search::GIN::DelegateToIndexed
     #   Search::GIN::Driver::Hash
     #);
 
     # on disk index:
     with qw(
-        Search::GIN::AwareObjects
+        Search::GIN::DelegateToIndexed
         Search::GIN::Driver::BerkeleyDB
         Search::GIN::Driver::PackUUID
     );
 
-    # AwareObjects means we delegate everything to Query and Indexable
+    # DelegateToIndexed means we delegate everything to Query and Indexable
     # there's also Callbacks, and presumably custom impls
 
     # PackUUID is because BerkeleyDB is ondisk
