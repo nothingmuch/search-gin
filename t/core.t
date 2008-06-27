@@ -78,7 +78,7 @@ use Test::TempDir;
     with qw(MyTagQuery);
 
     sub gin_consistent {
-        my ( $self, $item ) = @_;
+        my ( $self, $index, $item ) = @_;
         return $item->tags->superset($self->tags);
     }
 
@@ -90,7 +90,7 @@ use Test::TempDir;
     with qw(MyTagQuery);
 
     sub gin_consistent {
-        my ( $self, $item ) = @_;
+        my ( $self, $index, $item ) = @_;
         return $self->tags->intersection($item->tags)->size >= 1;
     }
 

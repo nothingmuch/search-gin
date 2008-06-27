@@ -3,15 +3,21 @@
 package Search::GIN::Indexable;
 use Moose::Role;
 
-requires qw(
-    gin_id
-    gin_extract_values
-    gin_compare_values
-);
+requires 'gin_extract_values';
+
+sub gin_id {
+    my $self = shift;
+    return $self;
+}
+
+sub gin_compare_values {
+    my ( $self, $one, $two ) = @_;
+    $one cmp $two;
+}
 
 sub gin_consistent {
-    my ( $self, $query, @args ) = @_;
-    $query->gin_consistent($self, @args);
+    my ( $self, $index, $query, @args ) = @_;
+    $query->gin_consistent($index, $self, @args);
 }
 
 __PACKAGE__

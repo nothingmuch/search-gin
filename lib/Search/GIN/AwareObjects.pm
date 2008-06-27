@@ -11,7 +11,7 @@ BEGIN {
     foreach my $method qw(extract_values compare_values consistent) {
         eval "sub $method {
             my ( \$self, \$obj, \@args ) = \@_;
-            \$obj->gin_$method(\@args);
+            \$obj->gin_$method(\$self, \@args);
         }";
     }
 }
