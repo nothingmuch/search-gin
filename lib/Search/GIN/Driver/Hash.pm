@@ -8,40 +8,60 @@ use Set::Object qw(set);
 use namespace::clean -except => [qw(meta)];
 
 with qw(
-    Search::GIN::Driver::TXN
+    Search::GIN::Driver::JoinKeys
 );
 
-has hash => (
+has values => (
     isa => "HashRef",
     is  => "ro",
     default => sub { {} },
 );
 
-sub txn_begin { }
-
-sub txn_commit { }
-
-sub txn_rollback { }
+has objects => (
+    isa => "HashRef",
+    is  => "ro",
+    default => sub { {} },
+);
 
 sub fetch_entry {
     my ( $self, $key ) = @_;
-    ( $self->hash->{$key} || return )->members;
+    $self->values->{$self->join_key($key)};
 }
 
 sub remove_ids {
-    my ( $self, $key, $ids ) = @_;
+    my ( $self, @ids ) = @_;
 
-    if ( my $set = $self->hash-{$key} ) {
-        $set->remove(@$ids);
-        delete $self->hash->{$key} if $set->size == 0; 
+    my $values  = $self->values;
+    my $objects = $self->objects;
+
+    my @key_sets = grep { defined } delete @{$objects}{map { overload::StrVal($_) } @ids};
+    return unless @key_sets;
+    my $keys = (shift @key_sets)->union(@key_sets);
+
+    foreach my $key ( $keys->members ) {
+        my $key = $self->join_key($key);
+        my $set = $values->{$key};
+        $set->remove(@ids);
+        delete $values->{$key} if $set->size == 0;
     }
 }
 
-sub insert_ids {
-    my ( $self, $key, $ids ) = @_;
+sub insert_entry {
+    my ( $self, $id, @keys ) = @_;
 
-    my $set = $self->hash->{$key} ||= Set::Object->new;
-    $set->insert(@$ids);
+    my $values  = $self->values;
+    my $objects = $self->objects;
+
+    $self->remove_ids($id);
+
+    my $set = $objects->{overload::StrVal($id)} = Set::Object->new;
+
+    $set->insert(@keys);
+
+    foreach my $id_set (@{$values}{$self->join_keys(@keys)}) {
+        $id_set ||= Set::Object->new;
+        $id_set->insert($id);
+    }
 }
 
 __PACKAGE__

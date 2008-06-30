@@ -3,9 +3,11 @@
 package Search::GIN::Query;
 use Moose::Role;
 
+use namespace::clean -except => [qw(meta)];
+
 requires qw(
-    gin_consistent
-    gin_extract_values
+    consistent
+    extract_values
 );
 
 __PACKAGE__

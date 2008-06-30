@@ -16,6 +16,7 @@ use namespace::clean -except => [qw(meta)];
 with qw(
     Search::GIN::Driver::TXN
     Search::GIN::Driver::Pack
+    Search::GIN::Driver::JoinKeys
 );
 
 has home => (
@@ -67,82 +68,103 @@ sub _build_db {
 
 # FIXME nested transactions
 sub txn_begin {
-    return;
     my $self = shift;
 
     my $txn = $self->env->TxnMgr->txn_begin;
-
-    $self->db->Txn($txn);
 
     return $txn;
 }
 
 sub txn_commit {
-    return;
     my ( $self, $txn ) = @_;
 
     unless ( $txn->txn_commit == 0 ) {
         die "txn commit failed";
     }
-
-    $self->db->Txn(undef);
 }
 
 sub txn_rollback {
-    return;
     my ( $self, $txn ) = @_;
-
-    warn "Aborting";
 
     unless ( $txn->txn_abort == 0 ) {
         die "txn abort failed";
     }
-
-    $self->db->Txn(undef);
 }
 
 sub fetch_entry {
     my ( $self, $key ) = @_;
-    @{ $self->get_ids($key) };
+    $self->get_ids($key);
 }
 
 sub remove_ids {
-    my ( $self, $key, $ids ) = @_;
+    my ( $self, @ids ) = @_;
 
-    my $set = $self->get_ids($key);
+    foreach my $id ( @ids ) {
+        my $key_set = $self->get_values($id) || next;
+        $self->put_values($id, ());
 
-    $set->remove(@$ids);
-
-    $self->put_ids($key, $set);
+        foreach my $key ( $key_set->members ) {
+            my $set = $self->get_ids($key) || next;
+            $set->remove(@ids);
+            $self->put_ids($key, $set);
+        }
+    }
 }
 
-sub insert_ids {
-    my ( $self, $key, $ids ) = @_;
+sub insert_entry {
+    my ( $self, $id, @keys ) = @_;
 
-    my $set = $self->get_ids($key);
+    $self->remove_ids($id);
+    $self->put_values($id, @keys); 
 
-    $set->insert(@$ids);
+    foreach my $key (@keys) {
+        my $set = $self->get_ids($key) || set();
+        $set->insert($id);
+        $self->put_ids($key, $set);
+    }
+}
 
-    $self->put_ids($key, $set);
+sub get_values {
+    my ( $self, $id ) = @_;
+
+    if ( $self->db_get($self->join_key(id => $id), my $value) == 0) {
+        return $self->unpack_values($value);
+    } else {
+        return;
+    }
+}
+
+sub put_values {
+    my ( $self, $id, @keys ) = @_;
+
+    my $key_str = $self->join_key(id => $id);
+
+    if ( @keys ) {
+        $self->db_put($key_str, $self->pack_values(set($self->join_keys(@keys))));
+    } else {
+        $self->db_del($key_str);
+    }
 }
 
 sub get_ids {
     my ( $self, $key ) = @_;
 
-    if ( $self->db_get($key, my $value) == 0) {
+    if ( $self->db_get($self->join_key(key => $key), my $value) == 0) {
         return $self->unpack_ids($value);
     } else {
-        return set();
+        return;
     }
 }
 
 sub put_ids {
     my ( $self, $key, $ids ) = @_;
 
-    if ( @$ids ) {
-        $self->db_put($key, $self->pack_ids($ids));
+    my $key_str = $self->join_key(key => $key);
+
+    if ( $ids->size ) {
+        $self->db_put($key_str, $self->pack_ids($ids));
     } else {
-        $self->db_del($key);
+        $self->db_del($key_str);
     }
 }
 

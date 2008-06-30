@@ -9,56 +9,23 @@ use namespace::clean -except => [qw(meta)];
 
 with qw(Search::GIN::Driver);
 
-requires qw(objects_to_ids extract_values extract_query compare_values consistent ids_to_objects);
+requires qw(
+    objects_to_ids
+    ids_to_objects
+
+    extract_values
+);
 
 sub query {
     my ( $self, $query ) = @_;
 
-    my @values = $self->extract_query($query);
+    my @spec = $query->extract_values;
 
-    my @candidate_ids = $self->fetch_entries(@values);
+    my $set = $self->fetch_entries(@spec);
 
-    my @candidate_objs = $self->ids_to_objects(@candidate_ids);
+    my @candidate_objs = $self->ids_to_objects($set->members);
 
-    return grep { $self->consistent($_, $query, @values) } @candidate_objs;
-}
-
-sub insert {
-    my ( $self, @items ) = @_;
-
-    my $entries = $self->extract_entries(@items);
-
-    $self->txn_do(sub {
-        $self->insert_entries($entries);
-    });
-}
-
-sub remove {
-    my ( $self, @items ) = @_;
-
-    my $entries = $self->extract_entries(@items);
-
-    $self->txn_do(sub {
-        $self->remove_entries($entries);
-    });
-}
-
-sub extract_entries {
-    my ( $self, @items ) = @_;
-
-    my %entries;
-
-    my @ids = $self->objects_to_ids(@items);
-    foreach my $item ( @items ) {
-        my @keys = $self->extract_values($item);
-        my $id = shift @ids;
-
-        foreach my $key ( @keys ) {
-            push @{ $entries{$key} ||= [] }, $id;
-        }
-    }
-
-    return \%entries;
+    return grep { $query->consistent($self, $_) } @candidate_objs;
 }
 
 __PACKAGE__

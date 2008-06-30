@@ -3,22 +3,19 @@
 package Search::GIN::DelegateToIndexed;
 use Moose::Role;
 
+use namespace::clean -except => [qw(meta)];
+
 with qw(Search::GIN::Core);
 
 requires "ids_to_objects";
 
 BEGIN {
-    foreach my $method qw(extract_values compare_values consistent) {
+    foreach my $method qw(extract_values compare_values) {
         eval "sub $method {
             my ( \$self, \$obj, \@args ) = \@_;
             \$obj->gin_$method(\$self, \@args);
         }";
     }
-}
-
-sub extract_query {
-    my ( $self, $query, @args ) = @_;
-    $query->gin_extract_values($query, @args);
 }
 
 sub objects_to_ids {

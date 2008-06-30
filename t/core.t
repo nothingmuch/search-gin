@@ -18,10 +18,18 @@ use Test::TempDir;
     #);
 
     # on disk index:
-    with qw(
-        Search::GIN::DelegateToIndexed
-        Search::GIN::Driver::BerkeleyDB
-        Search::GIN::Driver::PackUUID
+    with (
+        qw(
+            Search::GIN::DelegateToIndexed
+            Search::GIN::Driver::BerkeleyDB
+            Search::GIN::Driver::PackUUID
+        ),
+        'Search::GIN::Driver::PackLength' => {
+            alias => {
+                pack_length   => "pack_values",
+                unpack_length => "unpack_values",
+            }
+        },
     );
 
     # DelegateToIndexed means we delegate everything to Query and Indexable
@@ -67,9 +75,11 @@ use Test::TempDir;
         required => 1,
     );
 
-    sub gin_extract_values {
+    sub extract_values {
         my $self = shift;
-        $self->tags->members;
+        return (
+            values => [ $self->tags->members ],
+        );
     }
 
     package MyTagQuery::Intersection;
@@ -77,10 +87,18 @@ use Test::TempDir;
 
     with qw(MyTagQuery);
 
-    sub gin_consistent {
+    sub consistent {
         my ( $self, $index, $item ) = @_;
         return $item->tags->superset($self->tags);
     }
+
+    around extract_values => sub {
+        my ( $next, $self, @args ) = @_;
+        return (
+            method => "all",
+            $self->$next(@args),
+        );
+    };
 
     __PACKAGE__->meta->make_immutable;
 
@@ -89,7 +107,7 @@ use Test::TempDir;
 
     with qw(MyTagQuery);
 
-    sub gin_consistent {
+    sub consistent {
         my ( $self, $index, $item ) = @_;
         return $self->tags->intersection($item->tags)->size >= 1;
     }
@@ -121,11 +139,6 @@ use Test::TempDir;
     sub gin_extract_values {
         my $self = shift;
         $self->tags->members;
-    }
-
-    sub gin_compare_values {
-        my ( $self, $one, $two ) = @_;
-        $one cmp $two;
     }
 
     __PACKAGE__->meta->make_immutable;

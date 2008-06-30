@@ -3,7 +3,7 @@
 package Search::GIN::Driver::Pack;
 use Moose::Role;
 
-requires qw(pack_ids unpack_ids);
+requires qw(pack_ids unpack_ids pack_values unpack_values);
 
 __PACKAGE__
 

@@ -3,35 +3,70 @@
 package Search::GIN::Driver;
 use Moose::Role;
 
+use Set::Object qw(set);
+
+use namespace::clean -except => [qw(meta)];
+
+with qw(
+    Search::GIN::ExpandKeys
+);
+
 requires qw(
-    txn_do
-    insert_ids
+    insert_entry
     remove_ids
     fetch_entry
 );
 
 sub fetch_entries {
-    my ( $self, @values ) = @_;
+    my ( $self, %args ) = @_;
 
-    my @ids = map { $self->fetch_entry($_) } @values;
+    my $method = "fetch_entries_" . ( $args{method} || "any" );
 
-    my %seen;
-    return grep { !$seen{$_}++ } @ids;
+    $self->$method(%args);
 }
 
-sub remove_entries {
-    my ( $self, $entries ) = @_;
+sub fetch_entries_any {
+    my ( $self, %args ) = @_;
 
-    foreach my $key ( keys %$entries ) {
-        $self->remove_ids($key, $entries->{$key});
-    }
+    my @values = $self->expand_keys($args{values});
+
+    my @sets = grep { defined } map { $self->fetch_entry($_) } @values;
+    return set() unless @sets;
+    return $sets[0] if @sets == 1;
+    return (shift @sets)->union(@sets);
 }
 
-sub insert_entries {
-    my ( $self, $entries ) = @_;
+sub fetch_entries_all {
+    my ( $self, %args ) = @_;
 
-    foreach my $key ( keys %$entries ) {
-        $self->insert_ids($key, $entries->{$key});
+    my @values = $self->expand_keys($args{values});
+
+    my @sets = map { $self->fetch_entry($_) } @values;
+    return set() unless @sets;
+    return $sets[0] if @sets == 1;
+    return (shift @sets)->intersection(@sets);
+}
+
+sub remove {
+    my ( $self, @items ) = @_;
+
+    my @ids = $self->objects_to_ids(@items);
+
+    $self->remove_ids(@ids);
+}
+
+sub insert {
+    my ( $self, @items ) = @_;
+
+    my @ids = $self->objects_to_ids(@items);
+
+    my @entries;
+
+    foreach my $item ( @items ) {
+        my @keys = $self->expand_keys($self->extract_values($item));
+        my $id = shift @ids;
+
+        $self->insert_entry( $id, @keys );
     }
 }
 
