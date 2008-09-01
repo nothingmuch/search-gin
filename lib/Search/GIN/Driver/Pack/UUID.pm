@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Search::GIN::Driver::PackUUID;
+package Search::GIN::Driver::Pack::UUID;
 use Moose::Role;
 
 use Set::Object qw(set);

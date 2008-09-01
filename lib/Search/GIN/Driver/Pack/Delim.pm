@@ -1,20 +1,20 @@
 #!/usr/bin/perl
 
-package Search::GIN::Driver::PackLength;
+package Search::GIN::Driver::Pack::Delim;
 use Moose::Role;
 
 use Set::Object qw(set);
 
 use namespace::clean -except => [qw(meta)];
 
-sub pack_length {
+sub pack_delim {
     my ( $self, $strings ) = @_;
-    pack("(n/a*)*", $strings->members);
+    join("\0", $strings->members );
 }
 
-sub unpack_length {
+sub unpack_delim {
     my ( $self, $string ) = @_;
-    set(unpack("(n/a*)*", $string));
+    set(split("\0", $string ));
 }
 
 __PACKAGE__
@@ -25,11 +25,11 @@ __END__
 
 =head1 NAME
 
-Search::GIN::Driver::PackLength - 
+Search::GIN::Driver::PackDelim - 
 
 =head1 SYNOPSIS
 
-	use Search::GIN::Driver::PackLength;
+	use Search::GIN::Driver::PackDelim;
 
 =head1 DESCRIPTION
 
