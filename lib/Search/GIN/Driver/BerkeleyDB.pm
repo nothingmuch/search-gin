@@ -6,6 +6,9 @@ use Moose::Role;
 use Set::Object qw(set);
 use Scalar::Util qw(weaken);
 use List::MoreUtils qw(uniq);
+use Scope::Guard;
+
+use constant USE_PARTIAL => 1; # not sure it's a good thing yet
 
 use MooseX::Types::Path::Class;
 
@@ -163,7 +166,24 @@ sub get_values {
 sub get_ids {
     my ( $self, $key ) = @_;
 
-    my $cursor = $self->secondary_db->db_cursor;
+    my $db = $self->secondary_db;
+
+    my ($pon, $off, $len, $reset);
+
+    # avoid loading data
+    if ( USE_PARTIAL ) {
+        ( $pon, $off, $len ) = $db->partial_set(0,0);
+
+        $reset = Scope::Guard->new(sub {
+            if ( $pon ) {
+                $db->partial_set($off, $len);
+            } else {
+                $db->partial_clear;
+            }
+        });
+    }
+
+    my $cursor = $db->db_cursor;
 
     my @matches;
 
@@ -171,8 +191,13 @@ sub get_ids {
 
     if ( $cursor->c_pget( $key, $pk, $v, DB_SET ) == 0 ) {
         push @matches, $pk;
-        while ( $cursor->c_pget( $key, $pk, $v, DB_NEXT_DUP ) == 0 ) {
-            push @matches, $pk;
+
+        $cursor->c_count(my $cnt);
+
+        if ( $cnt ) {
+            while ( $cursor->c_pget( $key, $pk, $v, DB_NEXT_DUP ) == 0 ) {
+                push @matches, $pk;
+            }
         }
     }
 
