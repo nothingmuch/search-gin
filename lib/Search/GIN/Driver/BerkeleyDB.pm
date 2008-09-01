@@ -13,7 +13,7 @@ use constant USE_PARTIAL => 1; # not sure it's a good thing yet
 
 use MooseX::Types::Path::Class;
 
-use BerkeleyDB 0.35; # DBT_MULTIPLE
+use BerkeleyDB 0.35; # DBT_MULTIPLE, see http://rt.cpan.org/Ticket/Display.html?id=38896
 
 use namespace::clean -except => [qw(meta)];
 
