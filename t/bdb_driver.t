@@ -14,17 +14,8 @@ use ok 'Search::GIN::Driver::BerkeleyDB';
     package Drv;
     use Moose;
 
-    with (
-        qw(
-            Search::GIN::Driver::BerkeleyDB
-            Search::GIN::Driver::PackUUID
-        ),
-        'Search::GIN::Driver::PackLength' => {
-            alias => {
-                pack_length   => "pack_values",
-                unpack_length => "unpack_values",
-            }
-        },
+    with qw(
+        Search::GIN::Driver::BerkeleyDB
     );
 }
 

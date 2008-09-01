@@ -17,7 +17,6 @@ use namespace::clean -except => [qw(meta)];
 
 with qw(
     Search::GIN::Driver::TXN
-    Search::GIN::Driver::Pack
 );
 
 has home => (
@@ -53,7 +52,7 @@ has db => (
     isa => "BerkeleyDB::Hash",
     is  => "ro",
     lazy_build => 1,
-    handles => [qw(db_get db_put db_del)],
+    handles => [qw(db_cursor db_put db_del)],
 );
 
 sub _build_db {
@@ -64,7 +63,7 @@ sub _build_db {
         -Filename => $self->file,
         -Flags    => DB_CREATE,
         -Txn      => undef,
-        #-Property => DB_DUP,
+        -Property => DB_DUP,
     );
 }
 
@@ -103,12 +102,25 @@ sub remove_ids {
 
     foreach my $id ( @ids ) {
         my $key_set = $self->get_values($id) || next;
-        $self->put_values($id, ());
 
+        $self->db_del("id:$id");
+
+        # FIXME can we use the fact these are sorted to do a binary search?
+        my $v;
         foreach my $key ( $key_set->members ) {
-            my $set = $self->get_ids($key) || next;
-            $set->remove(@ids);
-            $self->put_ids($key, $set);
+            my $c = $self->db_cursor;
+            if ( $c->c_get("key:$key", $v, DB_SET) == 0 ) {
+                if ( $v eq $id ) {
+                    $c->c_del;
+                } else {
+                    while( $c->c_get("key:$key", $v, DB_NEXT_DUP) == 0 ) {
+                        if ( $v eq $id ) {
+                            $c->c_del;
+                            last;
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -117,57 +129,49 @@ sub insert_entry {
     my ( $self, $id, @keys ) = @_;
 
     $self->remove_ids($id);
-    $self->put_values($id, @keys); 
 
     foreach my $key (@keys) {
-        my $set = $self->get_ids($key) || set();
-        $set->insert($id);
-        $self->put_ids($key, $set);
+        $self->db_put("key:$key", $id);
+        $self->db_put("id:$id", $key);
     }
 }
 
 sub get_values {
     my ( $self, $id ) = @_;
 
-    if ( $self->db_get("id:$id", my $value) == 0) {
-        return $self->unpack_values($value);
-    } else {
-        return;
+    my $db_key = "id:$id";
+    my $v;
+
+    my $cursor = $self->db_cursor;
+    my @matches;
+    
+    if ( $cursor->c_get( $db_key, $v, DB_SET ) == 0 ) {
+        push @matches, $v;
+        while ( $cursor->c_get($db_key, $v, DB_NEXT_DUP) == 0 ) {
+            push @matches, $v;
+        }
     }
-}
 
-sub put_values {
-    my ( $self, $id, @keys ) = @_;
-
-    my $key_str = "id:$id";
-
-    if ( @keys ) {
-        $self->db_put($key_str, $self->pack_values(set(@keys)));
-    } else {
-        $self->db_del($key_str);
-    }
+    return set(@matches);
 }
 
 sub get_ids {
     my ( $self, $key ) = @_;
 
-    if ( $self->db_get("key:$key", my $value) == 0) {
-        return $self->unpack_ids($value);
-    } else {
-        return;
-    }
-}
+    my $db_key = "key:$key";
+    my $v;
 
-sub put_ids {
-    my ( $self, $key, $ids ) = @_;
-    
-    my $key_str = "key:$key";
+    my $cursor = $self->db_cursor;
+    my @matches;
 
-    if ( $ids->size ) {
-        $self->db_put($key_str, $self->pack_ids($ids));
-    } else {
-        $self->db_del($key_str);
+    if ( $cursor->c_get( $db_key, $v, DB_SET ) == 0 ) {
+        push @matches, $v;
+        while ( $cursor->c_get($db_key, $v, DB_NEXT_DUP) == 0 ) {
+            push @matches, $v;
+        }
     }
+
+    return set(@matches);
 }
 
 __PACKAGE__
