@@ -14,12 +14,18 @@ use ok 'Search::GIN::Driver::BerkeleyDB';
     package Drv;
     use Moose;
 
-    with qw(
-        Search::GIN::Driver::BerkeleyDB
+    with (
+        'Search::GIN::Driver::BerkeleyDB',
+        'Search::GIN::Driver::Pack::Length' => {
+            alias => {
+                pack_length => "pack_values",
+                unpack_length => "unpack_values",
+            },
+        },
     );
 }
 
-my $d = Drv->new( file => "foo.idx", home => temp_root );
+my $d = Drv->new( home => temp_root );
 
 my $id = "a" x 16;
 my @ids = map { $id++ } 1 .. 10;

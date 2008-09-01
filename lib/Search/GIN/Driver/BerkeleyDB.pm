@@ -4,20 +4,18 @@ package Search::GIN::Driver::BerkeleyDB;
 use Moose::Role;
 
 use Set::Object qw(set);
+use Scalar::Util qw(weaken);
+use List::MoreUtils qw(uniq);
 
 use MooseX::Types::Path::Class;
 
-use List::MoreUtils qw(uniq);
-
-use BerkeleyDB;
-
-# FIXME http://www.oracle.com/technology/documentation/berkeley-db/db/ref/am/second.html
-# http://www.oracle.com/technology/documentation/berkeley-db/db/gsg/CXX/keyCreator.html
+use BerkeleyDB 0.35; # DBT_MULTIPLE
 
 use namespace::clean -except => [qw(meta)];
 
 with qw(
     Search::GIN::Driver::TXN
+    Search::GIN::Driver::Pack::Values
 );
 
 has home => (
@@ -27,11 +25,18 @@ has home => (
     required => 1,
 );
 
-has file => (
+has primary_file => (
     isa => "Path::Class::File",
     is  => "ro",
-    coerce   => 1,
-    required => 1,
+    coerce  => 1,
+    default => sub { Path::Class::File->new("primary.db") },
+);
+
+has secondary_file => (
+    isa => "Path::Class::File",
+    is  => "ro",
+    coerce  => 1,
+    default => sub { Path::Class::File->new("secondary.db") },
 );
 
 has env => (
@@ -49,22 +54,50 @@ sub _build_env {
     );
 }
 
-has db => (
+has [qw(primary_db secondary_db)] => (
     isa => "Object",
     is  => "ro",
     lazy_build => 1,
-    handles => [qw(db_cursor db_put db_del)],
 );
 
-sub _build_db {
+sub _build_primary_db {
     my $self = shift;
 
+    my $primary = $self->open_db( $self->primary_file );
+
+    my $secondary = $self->secondary_db;
+
+    my $weak_self = $self;
+    weaken($weak_self);
+
+    if( $primary->associate( $secondary, sub {
+        my ( $id, $vals ) = @_;
+        my $v = $weak_self->unpack_values($vals);
+
+        $_[2] = [ $v->members ];
+
+        return 0;
+    } ) != 0 ) {
+        die $BerkeleyDB::Error;
+    }
+
+    return $primary;
+}
+
+sub _build_secondary_db {
+    my $self = shift;
+    $self->open_db( $self->secondary_file, -Property => DB_DUP|DB_DUPSORT );
+}
+
+sub open_db {
+    my ( $self, $file, @args ) = @_;
+
     BerkeleyDB::Btree->new(
-        -Env      => $self->env,,
-        -Filename => $self->file,
+        -Env      => $self->env,
+        -Filename => $file,
         -Flags    => DB_CREATE|DB_AUTO_COMMIT,
         -Txn      => undef,
-        -Property => DB_DUP|DB_DUPSORT,
+        @args,
     );
 }
 
@@ -73,7 +106,7 @@ sub txn_begin {
 
     my $txn = $self->env->TxnMgr->txn_begin(@args);
 
-    $txn->Txn($self->db);
+    $txn->Txn($self->primary_db, $self->secondary_db);
 
     return $txn;
 }
@@ -102,75 +135,46 @@ sub fetch_entry {
 sub remove_ids {
     my ( $self, @ids ) = @_;
 
+    my $pri = $self->primary_db;
+
     foreach my $id ( @ids ) {
-        my $key_set = $self->get_values($id) || next;
-
-        $self->db_del("id:$id");
-
-        # FIXME can we use the fact these are sorted to do a binary search?
-        my $v;
-        foreach my $key ( $key_set->members ) {
-            my $db_key = "key:$key";
-            my $c = $self->db_cursor;
-            if ( $c->c_get($db_key, $v, DB_SET) == 0 ) {
-                if ( $v eq $id ) {
-                    $c->c_del;
-                } else {
-                    while( $c->c_get($db_key, $v, DB_NEXT_DUP) == 0 ) {
-                        if ( $v eq $id ) {
-                            $c->c_del;
-                            last;
-                        }
-                    }
-                }
-            }
-        }
+        $pri->db_del($id);
     }
 }
 
 sub insert_entry {
     my ( $self, $id, @keys ) = @_;
 
-    $self->remove_ids($id);
+    my $pri = $self->primary_db;
 
-    foreach my $key (@keys) {
-        $self->db_put("key:$key", $id);
-        $self->db_put("id:$id", $key);
-    }
+    $pri->db_put($id, $self->pack_values(set(@keys)));
 }
 
 sub get_values {
     my ( $self, $id ) = @_;
 
-    my $db_key = "id:$id";
     my $v;
 
-    my $cursor = $self->db_cursor;
-    my @matches;
-
-    if ( $cursor->c_get( $db_key, $v, DB_SET ) == 0 ) {
-        push @matches, $v;
-        while ( $cursor->c_get($db_key, $v, DB_NEXT_DUP) == 0 ) {
-            push @matches, $v;
-        }
+    if ( $self->primary_db->db_get( $id, $v ) == 0 ) {
+        return set($self->unpack_values($v));
+    } else {
+        return;
     }
-
-    return set(@matches);
 }
 
 sub get_ids {
     my ( $self, $key ) = @_;
 
-    my $db_key = "key:$key";
-    my $v;
+    my $cursor = $self->secondary_db->db_cursor;
 
-    my $cursor = $self->db_cursor;
     my @matches;
 
-    if ( $cursor->c_get( $db_key, $v, DB_SET ) == 0 ) {
-        push @matches, $v;
-        while ( $cursor->c_get($db_key, $v, DB_NEXT_DUP) == 0 ) {
-            push @matches, $v;
+    my ( $pk, $v );
+
+    if ( $cursor->c_pget( $key, $pk, $v, DB_SET ) == 0 ) {
+        push @matches, $pk;
+        while ( $cursor->c_pget( $key, $pk, $v, DB_NEXT_DUP ) == 0 ) {
+            push @matches, $pk;
         }
     }
 
