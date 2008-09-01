@@ -3,6 +3,8 @@
 package Search::GIN::Driver::TXN;
 use Moose::Role;
 
+use Scope::Guard;
+
 use Carp qw(croak);
 
 use namespace::clean -except => [qw(meta)];
@@ -11,17 +13,32 @@ with qw(Search::GIN::Driver);
 
 requires qw(txn_begin txn_commit txn_rollback);
 
+has current_transaction => (
+    isa => "Any",
+    is  => "rw",
+    writer => "set_current_transaction",
+    predicate => "has_current_transaction",
+    clearer => "clear_current_transaction",
+);
+
 sub txn_do {
     my ( $self, $coderef ) = ( shift, shift );
 
     ref $coderef eq 'CODE' or croak '$coderef must be a CODE reference';
 
-    return $coderef->(@_) if $self->{transaction_depth};
+    my ( $txn, $scope_guard );
+
+    if ( $self->has_current_transaction ) {
+        my $prev = $self->current_transaction;
+        $txn = $self->txn_begin($prev);
+        $scope_guard = Scope::Guard->new(sub { $self->set_current_transaction($prev) });
+    } else {
+        $txn = $self->txn_begin;
+        $scope_guard = Scope::Guard->new(sub { $self->clear_current_transaction() });
+    }
 
     my @result;
     my $want_array = wantarray;
-
-    my $txn = $self->txn_begin;
 
     my $err = do {
         local $@;

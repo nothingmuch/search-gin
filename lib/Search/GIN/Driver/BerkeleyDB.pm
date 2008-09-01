@@ -12,6 +12,7 @@ use List::MoreUtils qw(uniq);
 use BerkeleyDB;
 
 # FIXME http://www.oracle.com/technology/documentation/berkeley-db/db/ref/am/second.html
+# http://www.oracle.com/technology/documentation/berkeley-db/db/gsg/CXX/keyCreator.html
 
 use namespace::clean -except => [qw(meta)];
 
@@ -49,7 +50,7 @@ sub _build_env {
 }
 
 has db => (
-    isa => "BerkeleyDB::Hash",
+    isa => "Object",
     is  => "ro",
     lazy_build => 1,
     handles => [qw(db_cursor db_put db_del)],
@@ -58,20 +59,21 @@ has db => (
 sub _build_db {
     my $self = shift;
 
-    BerkeleyDB::Hash->new(
+    BerkeleyDB::Btree->new(
         -Env      => $self->env,,
         -Filename => $self->file,
-        -Flags    => DB_CREATE,
+        -Flags    => DB_CREATE|DB_AUTO_COMMIT,
         -Txn      => undef,
-        -Property => DB_DUP,
+        -Property => DB_DUP|DB_DUPSORT,
     );
 }
 
-# FIXME nested transactions
 sub txn_begin {
-    my $self = shift;
+    my ( $self, @args ) = @_;
 
-    my $txn = $self->env->TxnMgr->txn_begin;
+    my $txn = $self->env->TxnMgr->txn_begin(@args);
+
+    $txn->Txn($self->db);
 
     return $txn;
 }
@@ -86,7 +88,7 @@ sub txn_commit {
 
 sub txn_rollback {
     my ( $self, $txn ) = @_;
-
+    
     unless ( $txn->txn_abort == 0 ) {
         die "txn abort failed";
     }
@@ -108,12 +110,13 @@ sub remove_ids {
         # FIXME can we use the fact these are sorted to do a binary search?
         my $v;
         foreach my $key ( $key_set->members ) {
+            my $db_key = "key:$key";
             my $c = $self->db_cursor;
-            if ( $c->c_get("key:$key", $v, DB_SET) == 0 ) {
+            if ( $c->c_get($db_key, $v, DB_SET) == 0 ) {
                 if ( $v eq $id ) {
                     $c->c_del;
                 } else {
-                    while( $c->c_get("key:$key", $v, DB_NEXT_DUP) == 0 ) {
+                    while( $c->c_get($db_key, $v, DB_NEXT_DUP) == 0 ) {
                         if ( $v eq $id ) {
                             $c->c_del;
                             last;
@@ -144,7 +147,7 @@ sub get_values {
 
     my $cursor = $self->db_cursor;
     my @matches;
-    
+
     if ( $cursor->c_get( $db_key, $v, DB_SET ) == 0 ) {
         push @matches, $v;
         while ( $cursor->c_get($db_key, $v, DB_NEXT_DUP) == 0 ) {

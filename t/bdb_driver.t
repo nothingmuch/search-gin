@@ -62,7 +62,6 @@ eval {
 like( $@, qr/user error/, "got error" );
 
 {
-    local $TODO = "txns not implemented yet";
     is_deeply( [ $d->fetch_entry("gorch")->members ], [ ], "transaction aborted" );
 }
 
