@@ -11,12 +11,12 @@ with qw(Search::GIN::Driver);
 
 sub unpack_ids {
     my ( $self, $str ) = @_;
-    set(unpack("(a16)*", $str));
+    unpack("(a16)*", $str);
 }
 
 sub pack_ids {
-    my ( $self, $ids) = @_;
-    pack ("(a16)*", $ids->members); # FIXME enforce size
+    my ( $self, @ids ) = @_;
+    pack("(a16)*", @ids); # FIXME enforce size
 }
 
 __PACKAGE__

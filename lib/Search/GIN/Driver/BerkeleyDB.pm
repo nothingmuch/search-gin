@@ -72,9 +72,7 @@ sub _build_primary_db {
 
     if( $primary->associate( $secondary, sub {
         my ( $id, $vals ) = @_;
-        my $v = $weak_self->unpack_values($vals);
-
-        $_[2] = [ $v->members ];
+        $_[2] = [ $weak_self->unpack_values($vals) ];
 
         return 0;
     } ) != 0 ) {
@@ -147,7 +145,7 @@ sub insert_entry {
 
     my $pri = $self->primary_db;
 
-    $pri->db_put($id, $self->pack_values(set(@keys)));
+    $pri->db_put($id, $self->pack_values(@keys));
 }
 
 sub get_values {
@@ -156,7 +154,7 @@ sub get_values {
     my $v;
 
     if ( $self->primary_db->db_get( $id, $v ) == 0 ) {
-        return set($self->unpack_values($v));
+        return $self->unpack_values($v);
     } else {
         return;
     }
@@ -178,7 +176,7 @@ sub get_ids {
         }
     }
 
-    return set(@matches);
+    return set(@matches); # FIXME stream
 }
 
 __PACKAGE__

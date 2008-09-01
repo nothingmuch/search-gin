@@ -3,18 +3,16 @@
 package Search::GIN::Driver::Pack::Length;
 use Moose::Role;
 
-use Set::Object qw(set);
-
 use namespace::clean -except => [qw(meta)];
 
 sub pack_length {
-    my ( $self, $strings ) = @_;
-    pack("(n/a*)*", $strings->members);
+    my ( $self, @strings ) = @_;
+    pack("(n/a*)*", @strings);
 }
 
 sub unpack_length {
     my ( $self, $string ) = @_;
-    set(unpack("(n/a*)*", $string));
+    unpack("(n/a*)*", $string);
 }
 
 __PACKAGE__

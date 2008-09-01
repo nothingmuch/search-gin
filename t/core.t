@@ -22,9 +22,8 @@ use Test::TempDir;
         qw(
             Search::GIN::DelegateToIndexed
             Search::GIN::Driver::BerkeleyDB
-            Search::GIN::Driver::PackUUID
         ),
-        'Search::GIN::Driver::PackLength' => {
+        'Search::GIN::Driver::Pack::Length' => {
             alias => {
                 pack_length   => "pack_values",
                 unpack_length => "unpack_values",
