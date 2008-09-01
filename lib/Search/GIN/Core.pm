@@ -3,6 +3,7 @@
 package Search::GIN::Core;
 use Moose::Role;
 
+use Data::Stream::Bulk::Util qw(bulk);
 use List::MoreUtils qw(uniq);
 
 use namespace::clean -except => [qw(meta)];
@@ -16,16 +17,31 @@ requires qw(
     extract_values
 );
 
+has distinct => (
+    isa => "Bool",
+    is  => "rw",
+    default => 0, # FIXME what should the default be?
+);
+
 sub query {
-    my ( $self, $query ) = @_;
+    my ( $self, $query, @args ) = @_;
+
+    my %args = (
+        distinct => $self->distinct,
+        @args,
+    );
 
     my @spec = $query->extract_values;
 
     my $set = $self->fetch_entries(@spec);
 
-    my @candidate_objs = $self->ids_to_objects($set->all); # FIXME iterate
+    my @ids = $set->all; # FIXME iterate unless ->loaded
 
-    return grep { $query->consistent($self, $_) } @candidate_objs;
+    @ids = uniq(@ids) if $args{distinct};
+
+    my @candidate_objs = $self->ids_to_objects(@ids);
+
+    return bulk(grep { $query->consistent($self, $_) } @candidate_objs);
 }
 
 __PACKAGE__

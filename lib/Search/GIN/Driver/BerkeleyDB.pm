@@ -3,7 +3,8 @@
 package Search::GIN::Driver::BerkeleyDB;
 use Moose::Role;
 
-use Data::Stream::Bulk::Util qw(bulk);
+use Data::Stream::Bulk::Util qw(bulk nil);
+use Data::Stream::Bulk::Callback;
 use Scalar::Util qw(weaken);
 use List::MoreUtils qw(uniq);
 use Scope::Guard;
@@ -61,6 +62,12 @@ has [qw(primary_db secondary_db)] => (
     isa => "Object",
     is  => "ro",
     lazy_build => 1,
+);
+
+has block_size => (
+    isa => "Int",
+    is  => "rw",
+    default => 500,
 );
 
 sub _build_primary_db {
@@ -163,27 +170,26 @@ sub get_values {
     }
 }
 
+sub _key_only_guard ($) {
+    my $db = shift;
+
+    my ( $pon, $off, $len ) = $db->partial_set(0,0);
+
+    return Scope::Guard->new(sub {
+        if ( $pon ) {
+            $db->partial_set($off, $len);
+        } else {
+            $db->partial_clear;
+        }
+    });
+}
+
 sub get_ids {
     my ( $self, $key ) = @_;
 
-    # FIXME make this iterative
-
     my $db = $self->secondary_db;
 
-    my ($pon, $off, $len, $reset);
-
-    # avoid loading data
-    if ( USE_PARTIAL ) {
-        ( $pon, $off, $len ) = $db->partial_set(0,0);
-
-        $reset = Scope::Guard->new(sub {
-            if ( $pon ) {
-                $db->partial_set($off, $len);
-            } else {
-                $db->partial_clear;
-            }
-        });
-    }
+    my $g = USE_PARTIAL && _key_only_guard($db);
 
     my $cursor = $db->db_cursor;
 
@@ -196,14 +202,51 @@ sub get_ids {
 
         $cursor->c_count(my $cnt);
 
-        if ( $cnt ) {
-            while ( $cursor->c_pget( $key, $pk, $v, DB_NEXT_DUP ) == 0 ) {
-                push @matches, $pk;
+        if ( $cnt > 1 ) { # more entries for the same value
+            my $block_size = $self->block_size;
+
+            # fetch up to one block
+            for ( 1 .. $block_size ) {
+                if ( $cursor->c_pget( $key, $pk, $v, DB_NEXT_DUP ) == 0 ) {
+                    push @matches, $pk;
+                } else {
+                    return bulk(@matches);
+                }
             }
+
+            # and defer the rest
+            return bulk(@matches)->cat( $self->_iter_read_cursor( $key, $db, $cursor, $block_size) );
         }
     }
 
     return bulk(@matches);
+}
+
+sub _iter_read_cursor {
+    my ( $self, $key, $db, $cursor, $block_size ) = @_;
+
+    Data::Stream::Bulk::Callback->new(
+        callback => sub {
+            my ( $pk, $v, @matches );
+
+            return unless $cursor;
+
+            # sets up partial_set/partial_clear if enabled
+            my $g = USE_PARTIAL && _key_only_guard($db);
+
+            for ( 1 .. $block_size ) {
+                if ( $cursor->c_pget( $key, $pk, $v, DB_NEXT_DUP ) == 0 ) {
+                    push @matches, $pk;
+                } else {
+                    # we're done, this is the last block
+                    undef $cursor;
+                    return ( scalar(@matches) && \@matches );
+                }
+            }
+
+            return \@matches;
+        },
+    );
 }
 
 __PACKAGE__

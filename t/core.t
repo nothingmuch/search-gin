@@ -90,7 +90,7 @@ use Set::Object;
 
     sub consistent {
         my ( $self, $index, $item ) = @_;
-        return $item->tags->superset($self->tags);
+        return $self->tags->subset($item->tags);
     }
 
     around extract_values => sub {
@@ -118,6 +118,8 @@ use Set::Object;
     # this is an indexable object
     package MyObject;
     use Moose;
+
+    use overload '""' => sub { $_[0]->id }, fallback => 1; # is_deeply diagnosis
 
     use MooseX::Types::Set::Object;
 
@@ -149,6 +151,7 @@ use Set::Object;
 my $gin = MyGIN->new(
     home => temp_root,
     file => "foo.idx",
+    distinct => 1,
 );
 
 my @objs = map { MyObject->new(%$_) } (
@@ -169,32 +172,32 @@ my @objs = map { MyObject->new(%$_) } (
 $gin->insert(@objs);
 
 {
-    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(foo)] ) );
+    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(foo)] ) )->all;
     is_deeply( [ @res ], [ $objs[0] ] );
 }
 
 {
-    my @res = $gin->query( MyTagQuery::Union->new( tags => [qw(foo)] ) );
+    my @res = $gin->query( MyTagQuery::Union->new( tags => [qw(foo)] ) )->all;
     is_deeply( [ @res ], [ $objs[0] ] );
 }
 
 {
-    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(bar)] ) );
+    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(bar)] ) )->all;
     is_deeply( [ sort @res ], [ sort @objs[0, 1] ] );
 }
 
 {
-    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(gorch)] ) );
+    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(gorch)] ) )->all;
     is_deeply( [ sort @res ], [ sort @objs[1, 2] ] );
 }
 
 {
-    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(bar gorch)] ) );
+    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(bar gorch)] ) )->all;
     is_deeply( [ @res ], [ $objs[1] ] );
 }
 
 {
-    my @res = $gin->query( MyTagQuery::Union->new( tags => [qw(bar gorch)] ) );
+    my @res = $gin->query( MyTagQuery::Union->new( tags => [qw(bar gorch)] ) )->all;
     is_deeply( [ sort @res ], [ sort @objs ] );
 }
 
