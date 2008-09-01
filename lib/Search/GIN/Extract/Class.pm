@@ -3,26 +3,30 @@
 package Search::GIN::Extract::Class;
 use Moose::Role;
 
+use MRO::Compat;
+
 use namespace::clean -except => [qw(meta)];
 
-with qw(Search::GIN::Core);
+with qw(
+    Search::GIN::Core
+    Search::GIN::Keys::Deep
+);
 
 sub extract_values {
     my ( $self, $obj, @args ) = @_;
 
     my $class = ref $obj;
 
-    my $meta = Class::MOP::Class->initialize($class);
+    my $isa = $class->mro::get_linear_isa();
 
-    my @isa = $meta->linearized_isa;
+    my $meta = Class::MOP::get_metaclass_by_name($class);
+    my @roles = $meta && $meta->can("calculate_all_roles") ? $meta->calculate_all_roles : ();
 
-    my @roles = $meta->can("calculate_all_roles") ? $meta->calculate_all_roles : ();
-
-    return {
+    return $self->process_keys({
         blessed => $class,
-        class   => \@isa,
+        class   => $isa,
         does    => \@roles,
-    };
+    });
 }
 
 __PACKAGE__

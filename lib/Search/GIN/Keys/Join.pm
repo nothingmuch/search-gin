@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Search::GIN::Driver::JoinKeys;
+package Search::GIN::Keys::Join;
 use Moose::Role;
 
 sub join_keys {
@@ -17,19 +17,4 @@ sub join_key {
 __PACKAGE__
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Driver::JoinKeys - 
-
-=head1 SYNOPSIS
-
-	use Search::GIN::Driver::JoinKeys;
-
-=head1 DESCRIPTION
-
-=cut
-
 

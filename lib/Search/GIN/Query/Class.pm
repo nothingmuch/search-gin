@@ -7,7 +7,10 @@ use Carp qw(croak);
 
 use namespace::clean -except => [qw(meta)];
 
-with qw(Search::GIN::Query);
+with qw(
+    Search::GIN::Query
+    Search::GIN::Keys::Deep
+);
 
 has no_check => (
     isa => "Bool",
@@ -45,11 +48,11 @@ sub extract_values {
 
     return (
         method => "all",
-        values => {
+        values => [ $self->process_keys({
             ( $self->has_class   ? ( class   => $self->class   ) : () ),
             ( $self->has_does    ? ( does    => $self->does    ) : () ),
             ( $self->has_blessed ? ( blessed => $self->blessed ) : () ),
-        },
+        }) ],
     );
 }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Search::GIN::ExpandKeys;
+package Search::GIN::Keys::Expand;
 use Moose::Role;
 
 sub expand_keys {
@@ -47,19 +47,3 @@ sub expand_keys_hash {
 __PACKAGE__
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::ExpandKeys - 
-
-=head1 SYNOPSIS
-
-	use Search::GIN::ExpandKeys;
-
-=head1 DESCRIPTION
-
-=cut
-
-

@@ -11,12 +11,13 @@ use List::MoreUtils qw(uniq);
 
 use BerkeleyDB;
 
+# FIXME http://www.oracle.com/technology/documentation/berkeley-db/db/ref/am/second.html
+
 use namespace::clean -except => [qw(meta)];
 
 with qw(
     Search::GIN::Driver::TXN
     Search::GIN::Driver::Pack
-    Search::GIN::Driver::JoinKeys
 );
 
 has home => (
@@ -63,6 +64,7 @@ sub _build_db {
         -Filename => $self->file,
         -Flags    => DB_CREATE,
         -Txn      => undef,
+        #-Property => DB_DUP,
     );
 }
 
@@ -127,7 +129,7 @@ sub insert_entry {
 sub get_values {
     my ( $self, $id ) = @_;
 
-    if ( $self->db_get($self->join_key(id => $id), my $value) == 0) {
+    if ( $self->db_get("id:$id", my $value) == 0) {
         return $self->unpack_values($value);
     } else {
         return;
@@ -137,10 +139,10 @@ sub get_values {
 sub put_values {
     my ( $self, $id, @keys ) = @_;
 
-    my $key_str = $self->join_key(id => $id);
+    my $key_str = "id:$id";
 
     if ( @keys ) {
-        $self->db_put($key_str, $self->pack_values(set($self->join_keys(@keys))));
+        $self->db_put($key_str, $self->pack_values(set(@keys)));
     } else {
         $self->db_del($key_str);
     }
@@ -149,7 +151,7 @@ sub put_values {
 sub get_ids {
     my ( $self, $key ) = @_;
 
-    if ( $self->db_get($self->join_key(key => $key), my $value) == 0) {
+    if ( $self->db_get("key:$key", my $value) == 0) {
         return $self->unpack_ids($value);
     } else {
         return;
@@ -158,8 +160,8 @@ sub get_ids {
 
 sub put_ids {
     my ( $self, $key, $ids ) = @_;
-
-    my $key_str = $self->join_key(key => $key);
+    
+    my $key_str = "key:$key";
 
     if ( $ids->size ) {
         $self->db_put($key_str, $self->pack_ids($ids));

@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Test::More 'no_plan';
-use Test::TempDir;
 
 use ok 'Search::GIN::Query::Class';
 
@@ -51,10 +50,7 @@ use ok 'Search::GIN::Query::Class';
 }
 
 
-my $gin = MyGIN->new(
-    home => temp_root,
-    file => "foo.idx",
-);
+my $gin = MyGIN->new();
 
 my @objs = (
     Base->new,

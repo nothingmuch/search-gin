@@ -4,12 +4,9 @@ package Search::GIN::Driver::Hash;
 use Moose::Role;
 
 use Set::Object qw(set);
+use Scalar::Util qw(refaddr);
 
 use namespace::clean -except => [qw(meta)];
-
-with qw(
-    Search::GIN::Driver::JoinKeys
-);
 
 has values => (
     isa => "HashRef",
@@ -25,7 +22,7 @@ has objects => (
 
 sub fetch_entry {
     my ( $self, $key ) = @_;
-    $self->values->{$self->join_key($key)};
+    $self->values->{$key};
 }
 
 sub remove_ids {
@@ -34,12 +31,11 @@ sub remove_ids {
     my $values  = $self->values;
     my $objects = $self->objects;
 
-    my @key_sets = grep { defined } delete @{$objects}{map { overload::StrVal($_) } @ids};
+    my @key_sets = grep { defined } delete @{$objects}{map { refaddr($_) } @ids};
     return unless @key_sets;
     my $keys = (shift @key_sets)->union(@key_sets);
 
     foreach my $key ( $keys->members ) {
-        my $key = $self->join_key($key);
         my $set = $values->{$key};
         $set->remove(@ids);
         delete $values->{$key} if $set->size == 0;
@@ -54,11 +50,11 @@ sub insert_entry {
 
     $self->remove_ids($id);
 
-    my $set = $objects->{overload::StrVal($id)} = Set::Object->new;
+    my $set = $objects->{refaddr($id)} = Set::Object->new;
 
     $set->insert(@keys);
 
-    foreach my $id_set (@{$values}{$self->join_keys(@keys)}) {
+    foreach my $id_set (@{$values}{@keys}) {
         $id_set ||= Set::Object->new;
         $id_set->insert($id);
     }

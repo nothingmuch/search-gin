@@ -9,13 +9,14 @@ with qw(Search::GIN::Core);
 
 requires "ids_to_objects";
 
-BEGIN {
-    foreach my $method qw(extract_values compare_values) {
-        eval "sub $method {
-            my ( \$self, \$obj, \@args ) = \@_;
-            \$obj->gin_$method(\$self, \@args);
-        }";
-    }
+sub extract_values {
+    my ( $self, $obj, @args ) = @_;
+    $obj->gin_extract_values($self, @args);
+}
+
+sub compare_values {
+    my ( $self, $obj, @args ) = @_;
+    $obj->gin_compare_values($self, @args);
 }
 
 sub objects_to_ids {

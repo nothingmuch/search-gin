@@ -7,15 +7,16 @@ use Set::Object qw(set);
 
 use namespace::clean -except => [qw(meta)];
 
-with qw(
-    Search::GIN::ExpandKeys
-);
-
 requires qw(
     insert_entry
     remove_ids
     fetch_entry
 );
+
+# Moose roles are broken, this creates a conflict:
+#    extract_values
+#    objects_to_ids
+#);
 
 sub fetch_entries {
     my ( $self, %args ) = @_;
@@ -28,7 +29,7 @@ sub fetch_entries {
 sub fetch_entries_any {
     my ( $self, %args ) = @_;
 
-    my @values = $self->expand_keys($args{values});
+    my @values = @{ $args{values} };
 
     my @sets = grep { defined } map { $self->fetch_entry($_) } @values;
     return set() unless @sets;
@@ -39,7 +40,7 @@ sub fetch_entries_any {
 sub fetch_entries_all {
     my ( $self, %args ) = @_;
 
-    my @values = $self->expand_keys($args{values});
+    my @values = @{ $args{values} };
 
     my @sets = map { $self->fetch_entry($_) } @values;
     return set() unless @sets;
@@ -63,7 +64,7 @@ sub insert {
     my @entries;
 
     foreach my $item ( @items ) {
-        my @keys = $self->expand_keys($self->extract_values($item));
+        my @keys = $self->extract_values($item);
         my $id = shift @ids;
 
         $self->insert_entry( $id, @keys );

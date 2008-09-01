@@ -16,7 +16,7 @@ sub unpack_ids {
 
 sub pack_ids {
     my ( $self, $ids) = @_;
-    pack ("(a16)*", $ids->members);
+    pack ("(a16)*", $ids->members); # FIXME enforce size
 }
 
 __PACKAGE__
