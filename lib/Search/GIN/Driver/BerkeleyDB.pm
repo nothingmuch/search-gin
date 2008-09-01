@@ -3,7 +3,7 @@
 package Search::GIN::Driver::BerkeleyDB;
 use Moose::Role;
 
-use Set::Object qw(set);
+use Data::Stream::Bulk::Util qw(bulk);
 use Scalar::Util qw(weaken);
 use List::MoreUtils qw(uniq);
 use Scope::Guard;
@@ -166,6 +166,8 @@ sub get_values {
 sub get_ids {
     my ( $self, $key ) = @_;
 
+    # FIXME make this iterative
+
     my $db = $self->secondary_db;
 
     my ($pon, $off, $len, $reset);
@@ -201,7 +203,7 @@ sub get_ids {
         }
     }
 
-    return set(@matches); # FIXME stream
+    return bulk(@matches);
 }
 
 __PACKAGE__

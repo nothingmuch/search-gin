@@ -3,8 +3,6 @@
 package Search::GIN::Driver::Pack::UUID;
 use Moose::Role;
 
-use Set::Object qw(set);
-
 use namespace::clean -except => [qw(meta)];
 
 with qw(Search::GIN::Driver);

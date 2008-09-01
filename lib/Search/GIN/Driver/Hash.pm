@@ -3,7 +3,9 @@
 package Search::GIN::Driver::Hash;
 use Moose::Role;
 
-use Set::Object qw(set);
+use Set::Object;
+
+use Data::Stream::Bulk::Util qw(bulk);
 use Scalar::Util qw(refaddr);
 
 use namespace::clean -except => [qw(meta)];
@@ -22,7 +24,12 @@ has objects => (
 
 sub fetch_entry {
     my ( $self, $key ) = @_;
-    $self->values->{$key};
+
+    if ( my $set = $self->values->{$key} ) {
+        return bulk($set->members);
+    } else {
+        return;
+    }
 }
 
 sub remove_ids {
@@ -63,19 +70,3 @@ sub insert_entry {
 __PACKAGE__
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Driver::Hash - 
-
-=head1 SYNOPSIS
-
-    use Search::GIN::Driver::Hash;
-
-=head1 DESCRIPTION
-
-=cut
-
-

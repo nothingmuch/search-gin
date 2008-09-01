@@ -6,6 +6,8 @@ use warnings;
 use Test::More 'no_plan';
 use Test::TempDir;
 
+use Set::Object;
+
 {
     # this will be a default class, for now I'm keeping them separate
     package MyGIN;

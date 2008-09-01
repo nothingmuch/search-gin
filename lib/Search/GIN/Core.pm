@@ -23,7 +23,7 @@ sub query {
 
     my $set = $self->fetch_entries(@spec);
 
-    my @candidate_objs = $self->ids_to_objects($set->members);
+    my @candidate_objs = $self->ids_to_objects($set->all); # FIXME iterate
 
     return grep { $query->consistent($self, $_) } @candidate_objs;
 }
