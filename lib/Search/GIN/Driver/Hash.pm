@@ -10,6 +10,8 @@ use Scalar::Util qw(refaddr);
 
 use namespace::clean -except => [qw(meta)];
 
+with qw(Search::GIN::Driver);
+
 has values => (
     isa => "HashRef",
     is  => "ro",

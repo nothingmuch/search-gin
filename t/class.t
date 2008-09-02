@@ -13,6 +13,7 @@ use ok 'Search::GIN::Query::Class';
 
     with (
         qw(
+            Search::GIN::Core
             Search::GIN::Driver::Hash
             Search::GIN::SelfIDs
             Search::GIN::Extract::Class

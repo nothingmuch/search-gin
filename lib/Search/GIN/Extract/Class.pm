@@ -7,10 +7,7 @@ use MRO::Compat;
 
 use namespace::clean -except => [qw(meta)];
 
-with qw(
-    Search::GIN::Core
-    Search::GIN::Keys::Deep
-);
+with qw(Search::GIN::Keys::Deep);
 
 sub extract_values {
     my ( $self, $obj, @args ) = @_;
