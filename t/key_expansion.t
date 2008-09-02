@@ -28,7 +28,7 @@ is_deeply(
 is_deeply(
     [ $foo->expand_keys({ foo => [qw(bar gorch)] }) ],
     [ [qw(foo bar)], [qw(foo gorch)] ],
-    "join keys",
+    "expand keys",
 );
 
 is_deeply(
