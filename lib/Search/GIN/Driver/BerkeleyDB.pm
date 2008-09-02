@@ -6,7 +6,6 @@ use Moose::Role;
 use Data::Stream::Bulk::Util qw(bulk nil);
 use Data::Stream::Bulk::Callback;
 use Scalar::Util qw(weaken);
-use List::MoreUtils qw(uniq);
 use Scope::Guard;
 
 use constant USE_PARTIAL => 1; # not sure it's a good thing yet
@@ -78,11 +77,11 @@ sub _build_primary_db {
     my $secondary = $self->secondary_db;
 
     my $weak_self = $self;
-    weaken($weak_self);
+    weaken($weak_self); # don't leak (circular ref)
 
     if( $primary->associate( $secondary, sub {
         my ( $id, $vals ) = @_;
-        $_[2] = [ $weak_self->unpack_values($vals) ];
+        $_[2] = [ $weak_self->unpack_values($vals) ]; # YUCK WE HATES IT!!!
 
         return 0;
     } ) != 0 ) {
@@ -92,6 +91,9 @@ sub _build_primary_db {
     return $primary;
 }
 
+# this is the secondary index, it maps from secondary keys (the inverted values) back to IDS
+# BDB maintains (as in updates/deletes etc) entries from this index based on
+# modifications to primary_db
 sub _build_secondary_db {
     my $self = shift;
     $self->open_db( $self->secondary_file, -Property => DB_DUP|DB_DUPSORT );
@@ -100,19 +102,20 @@ sub _build_secondary_db {
 sub open_db {
     my ( $self, $file, @args ) = @_;
 
-    BerkeleyDB::Btree->new(
+    BerkeleyDB::Btree->new( # FIXME allow hash too?
         -Env      => $self->env,
         -Filename => $file,
-        -Flags    => DB_CREATE|DB_AUTO_COMMIT,
+        -Flags    => DB_CREATE|DB_AUTO_COMMIT, # autocommit allows us to work with or without txn_begin
         -Txn      => undef,
         @args,
-    );
+    ) || die $BerkeleyDB::Error;
 }
 
+# base methods for the TXN role
 sub txn_begin {
-    my ( $self, @args ) = @_;
+    my ( $self, $parent_txn ) = @_;
 
-    my $txn = $self->env->TxnMgr->txn_begin(@args);
+    my $txn = $self->env->TxnMgr->txn_begin($parent_txn || ());
 
     $txn->Txn($self->primary_db, $self->secondary_db);
 
@@ -123,7 +126,7 @@ sub txn_commit {
     my ( $self, $txn ) = @_;
 
     unless ( $txn->txn_commit == 0 ) {
-        die "txn commit failed";
+        die $BerkeleyDB::Error;
     }
 }
 
@@ -131,10 +134,11 @@ sub txn_rollback {
     my ( $self, $txn ) = @_;
     
     unless ( $txn->txn_abort == 0 ) {
-        die "txn abort failed";
+        die $BerkeleyDB::Error;
     }
 }
 
+# Search::GIN::Driver methods
 sub fetch_entry {
     my ( $self, $key ) = @_;
     $self->get_ids($key);
@@ -145,6 +149,7 @@ sub remove_ids {
 
     my $pri = $self->primary_db;
 
+    # BDB will delete all dependent keys from the secondary index
     foreach my $id ( @ids ) {
         $pri->db_del($id);
     }
@@ -155,9 +160,12 @@ sub insert_entry {
 
     my $pri = $self->primary_db;
 
+    # BDB will update the secondary index using the callback we gave it in
+    # ->associate
     $pri->db_put($id, $self->pack_values(@keys));
 }
 
+# this method is just for completeness
 sub get_values {
     my ( $self, $id ) = @_;
 
@@ -170,6 +178,10 @@ sub get_values {
     }
 }
 
+# OW MY EYES! BDB is so nastty it's not even funny.
+
+# to avoid reading key data unnecessarily (we'll never actually need it) we set
+# the partial value range to
 sub _key_only_guard ($) {
     my $db = shift;
 
@@ -184,6 +196,9 @@ sub _key_only_guard ($) {
     });
 }
 
+# this data set is potentially large (all IDs for a given secondary key)
+# we iterate the duplicates, and if we wind up with more than $block_size then
+# we create an iterator for the remainder
 sub get_ids {
     my ( $self, $key ) = @_;
 
@@ -206,7 +221,7 @@ sub get_ids {
             my $block_size = $self->block_size;
 
             # fetch up to one block
-            for ( 1 .. $block_size ) {
+            for ( 1 .. $block_size-1 ) {
                 if ( $cursor->c_pget( $key, $pk, $v, DB_NEXT_DUP ) == 0 ) {
                     push @matches, $pk;
                 } else {
@@ -222,6 +237,7 @@ sub get_ids {
     return bulk(@matches);
 }
 
+# creates a Data::Stream::Bulk out of a BDB iterator
 sub _iter_read_cursor {
     my ( $self, $key, $db, $cursor, $block_size ) = @_;
 
