@@ -3,8 +3,7 @@
 package Search::GIN::Core;
 use Moose::Role;
 
-use Data::Stream::Bulk::Util qw(bulk);
-use List::MoreUtils qw(uniq);
+use Data::Stream::Bulk::Util qw(bulk unique);
 
 use namespace::clean -except => [qw(meta)];
 
@@ -33,15 +32,11 @@ sub query {
 
     my @spec = $query->extract_values;
 
-    my $set = $self->fetch_entries(@spec);
+    my $ids = $self->fetch_entries(@spec);
 
-    my @ids = $set->all; # FIXME iterate unless ->loaded
+    $ids = unique($ids) if $args{distinct};
 
-    @ids = uniq(@ids) if $args{distinct};
-
-    my @candidate_objs = $self->ids_to_objects(@ids);
-
-    return bulk(grep { $query->consistent($self, $_) } @candidate_objs);
+    return $ids->filter(sub { [ grep { $query->consistent($self, $_) } $self->ids_to_objects(@$_) ] });
 }
 
 __PACKAGE__

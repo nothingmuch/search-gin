@@ -3,8 +3,7 @@
 package Search::GIN::Driver;
 use Moose::Role;
 
-use Data::Stream::Bulk::Util qw(bulk nil cat);
-use List::MoreUtils qw(uniq);
+use Data::Stream::Bulk::Util qw(bulk nil cat unique);
 
 use namespace::clean -except => [qw(meta)];
 
@@ -38,17 +37,16 @@ sub fetch_entries_any {
     my @streams = $self->fetch_entry_streams(@args);
 
     return nil unless @streams;
-    return $streams[0] if @streams == 1;
 
     my $res = cat(splice @streams); # splice disposes of @streams ASAP, keeping memory utilization down
 
     if ( $res->loaded ) {
         # if all results are already ready, we can uniqify them to avoid
         # duplicate calls to ->consistent
-        return bulk( uniq $res->all );
+        return unique($res);
+    } else {
+        return $res;
     }
-
-    return $res;
 }
 
 sub fetch_entries_all {
