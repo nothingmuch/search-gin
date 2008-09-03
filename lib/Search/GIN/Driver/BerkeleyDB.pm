@@ -53,7 +53,7 @@ sub _build_env {
 
     BerkeleyDB::Env->new(
         -Home  => $self->home,
-        -Flags => DB_CREATE|DB_INIT_TXN|DB_INIT_MPOOL|DB_INIT_LOCK,
+        -Flags => DB_CREATE | DB_INIT_MPOOL | DB_INIT_TXN,
     );
 }
 
