@@ -88,6 +88,8 @@ sub check_object {
     return 1;
 }
 
+__PACKAGE__->meta->make_immutable;
+
 __PACKAGE__
 
 __END__
