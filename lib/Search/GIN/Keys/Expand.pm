@@ -3,6 +3,10 @@
 package Search::GIN::Keys::Expand;
 use Moose::Role;
 
+use Carp qw(croak);
+
+use namespace::clean -except => 'meta';
+
 sub expand_keys {
     my ( $self, @keys ) = @_;
     return map { $self->expand_key($_) } @keys;
@@ -14,6 +18,8 @@ sub expand_key {
     return $self->expand_key_string($value) if not ref $value;
 
     my $method = "expand_keys_" . lc ref($value);
+
+    croak("Don't know how to expand $value in key") if $method =~ /::/ or not $self->can($method);
 
     return $self->$method($value);
 }
