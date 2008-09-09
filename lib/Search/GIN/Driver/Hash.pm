@@ -40,7 +40,7 @@ sub remove_ids {
     my $values  = $self->values;
     my $objects = $self->objects;
 
-    my @key_sets = grep { defined } delete @{$objects}{map { refaddr($_) } @ids};
+    my @key_sets = grep { defined } delete @{$objects}{map { ref() ? refaddr($_) : $_ } @ids};
     return unless @key_sets;
     my $keys = (shift @key_sets)->union(@key_sets);
 
@@ -59,7 +59,7 @@ sub insert_entry {
 
     $self->remove_ids($id);
 
-    my $set = $objects->{refaddr($id)} = Set::Object->new;
+    my $set = $objects->{ref($id) ? refaddr($id) : $id} = Set::Object->new;
 
     $set->insert(@keys);
 
