@@ -6,12 +6,12 @@ use Moose::Role;
 use namespace::clean -except => [qw(meta)];
 
 sub ids_to_objects {
-    my ( $self, @ids ) = @_;
+    my ( $self, $c, @ids ) = @_;
     return @ids;
 }
 
 sub objects_to_ids {
-    my ( $self, @objs ) = @_;
+    my ( $self, $c, @objs ) = @_;
     return @objs;
 }
 

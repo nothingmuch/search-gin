@@ -4,12 +4,12 @@ package Search::GIN::Keys::Join;
 use Moose::Role;
 
 sub join_keys {
-    my ( $self, @keys ) = @_;
-    map { $self->join_key($_) } @keys;
+    my ( $self, $c, @keys ) = @_;
+    map { $self->join_key($c, $_) } @keys;
 }
 
 sub join_key {
-    my ( $self, @key ) = @_;
+    my ( $self, $c, @key ) = @_;
 
     join ":", map { ref($_) ? @$_ : $_ } @key;
 }

@@ -19,22 +19,22 @@ requires qw(
 #);
 
 sub fetch_entry_streams {
-    my ( $self, %args ) = @_;
-    map { $self->fetch_entry($_) } @{ $args{values} };
+    my ( $self, $c, %args ) = @_;
+    map { $self->fetch_entry( $c, $_ ) } @{ $args{values} };
 }
 
 sub fetch_entries {
-    my ( $self, %args ) = @_;
+    my ( $self, $c, %args ) = @_;
 
     my $method = "fetch_entries_" . ( $args{method} || "any" );
 
-    $self->$method(%args);
+    $self->$method( $c, %args );
 }
 
 sub fetch_entries_any {
-    my ( $self, @args ) = @_;
+    my ( $self, $c, @args ) = @_;
 
-    my @streams = $self->fetch_entry_streams(@args);
+    my @streams = $self->fetch_entry_streams( $c, @args );
 
     return nil unless @streams;
 
@@ -50,9 +50,9 @@ sub fetch_entries_any {
 }
 
 sub fetch_entries_all {
-    my ( $self, @args ) = @_;
+    my ( $self, $c, @args ) = @_;
 
-    my @streams = $self->fetch_entry_streams(@args);
+    my @streams = $self->fetch_entry_streams( $c, @args );
 
     return nil unless @streams;
     return $streams[0] if @streams == 1;
@@ -82,25 +82,25 @@ sub fetch_entries_all {
 }
 
 sub remove {
-    my ( $self, @items ) = @_;
+    my ( $self, $c, @items ) = @_;
 
-    my @ids = $self->objects_to_ids(@items);
+    my @ids = $self->objects_to_ids( $c, @items );
 
-    $self->remove_ids(@ids);
+    $self->remove_ids( $c, @ids );
 }
 
 sub insert {
-    my ( $self, @items ) = @_;
+    my ( $self, $c, @items ) = @_;
 
-    my @ids = $self->objects_to_ids(@items);
+    my @ids = $self->objects_to_ids( $c, @items );
 
     my @entries;
 
     foreach my $item ( @items ) {
-        my @keys = $self->extract_values($item);
+        my @keys = $self->extract_values( $c, $item);
         my $id = shift @ids;
 
-        $self->insert_entry( $id, @keys );
+        $self->insert_entry( $c, $id, @keys );
     }
 }
 

@@ -23,20 +23,20 @@ has distinct => (
 );
 
 sub query {
-    my ( $self, $query, @args ) = @_;
+    my ( $self, $c, $query, @args ) = @_;
 
     my %args = (
         distinct => $self->distinct,
         @args,
     );
 
-    my @spec = $query->extract_values;
+    my @spec = $query->extract_values($c);
 
-    my $ids = $self->fetch_entries(@spec);
+    my $ids = $self->fetch_entries( $c, @spec );
 
     $ids = unique($ids) if $args{distinct};
 
-    return $ids->filter(sub { [ grep { $query->consistent($self, $_) } $self->ids_to_objects(@$_) ] });
+    return $ids->filter(sub { [ grep { $query->consistent($self, $c, $_) } $self->ids_to_objects( $c, @$_ ) ] });
 }
 
 __PACKAGE__

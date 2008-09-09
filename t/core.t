@@ -43,13 +43,13 @@ use Set::Object;
     # the only required method left after all these roles were added
     # we fake it here, but it should go to the storage backend
     sub ids_to_objects {
-        my ( $self, @ids ) = @_;
+        my ( $self, $c, @ids ) = @_;
         @{ $self->objects }{@ids};
     }
 
     around objects_to_ids => sub {
-        my ( $next, $self, @objs ) = @_;
-        my @ids = $self->$next(@objs);
+        my ( $next, $self, $c, @objs ) = @_;
+        my @ids = $self->$next($c, @objs);
         @{ $self->objects }{@ids} = @objs;
         return @ids;
     };
@@ -89,7 +89,7 @@ use Set::Object;
     with qw(MyTagQuery);
 
     sub consistent {
-        my ( $self, $index, $item ) = @_;
+        my ( $self, $index, $c, $item ) = @_;
         return $self->tags->subset($item->tags);
     }
 
@@ -109,7 +109,7 @@ use Set::Object;
     with qw(MyTagQuery);
 
     sub consistent {
-        my ( $self, $index, $item ) = @_;
+        my ( $self, $index, $c, $item ) = @_;
         return $self->tags->intersection($item->tags)->size >= 1;
     }
 
@@ -169,35 +169,35 @@ my @objs = map { MyObject->new(%$_) } (
     },
 );
 
-$gin->insert(@objs);
+$gin->insert(undef, @objs);
 
 {
-    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(foo)] ) )->all;
+    my @res = $gin->query( undef, MyTagQuery::Intersection->new( tags => [qw(foo)] ) )->all;
     is_deeply( [ @res ], [ $objs[0] ] );
 }
 
 {
-    my @res = $gin->query( MyTagQuery::Union->new( tags => [qw(foo)] ) )->all;
+    my @res = $gin->query( undef, MyTagQuery::Union->new( tags => [qw(foo)] ) )->all;
     is_deeply( [ @res ], [ $objs[0] ] );
 }
 
 {
-    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(bar)] ) )->all;
+    my @res = $gin->query( undef, MyTagQuery::Intersection->new( tags => [qw(bar)] ) )->all;
     is_deeply( [ sort @res ], [ sort @objs[0, 1] ] );
 }
 
 {
-    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(gorch)] ) )->all;
+    my @res = $gin->query( undef, MyTagQuery::Intersection->new( tags => [qw(gorch)] ) )->all;
     is_deeply( [ sort @res ], [ sort @objs[1, 2] ] );
 }
 
 {
-    my @res = $gin->query( MyTagQuery::Intersection->new( tags => [qw(bar gorch)] ) )->all;
+    my @res = $gin->query( undef, MyTagQuery::Intersection->new( tags => [qw(bar gorch)] ) )->all;
     is_deeply( [ @res ], [ $objs[1] ] );
 }
 
 {
-    my @res = $gin->query( MyTagQuery::Union->new( tags => [qw(bar gorch)] ) )->all;
+    my @res = $gin->query( undef, MyTagQuery::Union->new( tags => [qw(bar gorch)] ) )->all;
     is_deeply( [ sort @res ], [ sort @objs ] );
 }
 

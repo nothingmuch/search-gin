@@ -10,7 +10,7 @@ use namespace::clean -except => [qw(meta)];
 with qw(Search::GIN::Keys::Deep);
 
 sub extract_values {
-    my ( $self, $obj, @args ) = @_;
+    my ( $self, $c, $obj, @args ) = @_;
 
     my $class = ref $obj;
 
@@ -19,7 +19,7 @@ sub extract_values {
     my $meta = Class::MOP::get_metaclass_by_name($class);
     my @roles = $meta && $meta->can("calculate_all_roles") ? $meta->calculate_all_roles : ();
 
-    return $self->process_keys({
+    return $self->process_keys($c, {
         blessed => $class,
         class   => $isa,
         does    => \@roles,

@@ -10,17 +10,17 @@ with qw(Search::GIN::Core);
 requires "ids_to_objects";
 
 sub extract_values {
-    my ( $self, $obj, @args ) = @_;
-    $obj->gin_extract_values($self, @args);
+    my ( $self, $c, $obj, @args ) = @_;
+    $obj->gin_extract_values($self, $c, @args);
 }
 
 sub compare_values {
-    my ( $self, $obj, @args ) = @_;
-    $obj->gin_compare_values($self, @args);
+    my ( $self, $c, $obj, @args ) = @_;
+    $obj->gin_compare_values($self, $c, @args);
 }
 
 sub objects_to_ids {
-    my ( $self, @objs ) = @_;
+    my ( $self, $c, @objs ) = @_;
     map { $_->gin_id } @objs;
 }
 

@@ -61,20 +61,20 @@ my @objs = (
     Gorch->new,
 );
 
-$gin->insert(@objs);
+$gin->insert(undef, @objs);
 
 {
-    my @res = $gin->query( Search::GIN::Query::Class->new( class => "Base" ) )->all;
+    my @res = $gin->query( undef, Search::GIN::Query::Class->new( class => "Base" ) )->all;
     is_deeply( [ sort @res ], [ sort @objs ] );
 }
 
 {
-    my @res = $gin->query( Search::GIN::Query::Class->new( class => "Foo" ) )->all;
+    my @res = $gin->query( undef, Search::GIN::Query::Class->new( class => "Foo" ) )->all;
     is_deeply( [ @res ], [ $objs[1] ] );
 }
 
 {
-    my @res = $gin->query( Search::GIN::Query::Class->new( class => "Bar" ) )->all;
+    my @res = $gin->query( undef, Search::GIN::Query::Class->new( class => "Bar" ) )->all;
     is_deeply( [ sort @res ], [ sort @objs[2, 3, 4] ] );
 }
 

@@ -25,7 +25,7 @@ has objects => (
 );
 
 sub fetch_entry {
-    my ( $self, $key ) = @_;
+    my ( $self, $c, $key ) = @_;
 
     if ( my $set = $self->values->{$key} ) {
         return bulk($set->members);
@@ -35,7 +35,7 @@ sub fetch_entry {
 }
 
 sub remove_ids {
-    my ( $self, @ids ) = @_;
+    my ( $self, $c, @ids ) = @_;
 
     my $values  = $self->values;
     my $objects = $self->objects;
@@ -52,7 +52,7 @@ sub remove_ids {
 }
 
 sub insert_entry {
-    my ( $self, $id, @keys ) = @_;
+    my ( $self, $c, $id, @keys ) = @_;
 
     my $values  = $self->values;
     my $objects = $self->objects;
