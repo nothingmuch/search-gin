@@ -3,7 +3,7 @@
 package Search::GIN::DelegateToIndexed;
 use Moose::Role;
 
-use namespace::clean -except => [qw(meta)];
+use namespace::clean -except => 'meta';
 
 with qw(Search::GIN::Core);
 

@@ -97,7 +97,7 @@ sub insert {
     my @entries;
 
     foreach my $item ( @items ) {
-        my @keys = $self->extract_values( $c, $item);
+        my @keys = $self->extract_values( $c, $item );
         my $id = shift @ids;
 
         $self->insert_entry( $c, $id, @keys );
