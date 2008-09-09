@@ -13,11 +13,6 @@ requires qw(
     fetch_entry
 );
 
-# Moose roles are broken, this creates a conflict:
-#    extract_values
-#    objects_to_ids
-#);
-
 sub fetch_entry_streams {
     my ( $self, %args ) = @_;
     map { $self->fetch_entry($_) } @{ $args{values} };
@@ -79,29 +74,6 @@ sub fetch_entries_all {
 
     no warnings 'uninitialized'; # == with undef
     return bulk( grep { $seen{$_} == $n } $last->all );
-}
-
-sub remove {
-    my ( $self, @items ) = @_;
-
-    my @ids = $self->objects_to_ids(@items);
-
-    $self->remove_ids(@ids);
-}
-
-sub insert {
-    my ( $self, @items ) = @_;
-
-    my @ids = $self->objects_to_ids(@items);
-
-    my @entries;
-
-    foreach my $item ( @items ) {
-        my @keys = $self->extract_values($item);
-        my $id = shift @ids;
-
-        $self->insert_entry( $id, @keys );
-    }
 }
 
 __PACKAGE__

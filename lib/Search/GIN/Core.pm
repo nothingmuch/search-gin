@@ -40,6 +40,29 @@ sub query {
     return $ids->filter(sub { [ grep { $query->consistent($self, $_) } $self->ids_to_objects(@$_) ] });
 }
 
+sub remove {
+    my ( $self, @items ) = @_;
+
+    my @ids = $self->objects_to_ids(@items);
+
+    $self->remove_ids(@ids);
+}
+
+sub insert {
+    my ( $self, @items ) = @_;
+
+    my @ids = $self->objects_to_ids(@items);
+
+    my @entries;
+
+    foreach my $item ( @items ) {
+        my @keys = $self->extract_values($item);
+        my $id = shift @ids;
+
+        $self->insert_entry( $id, @keys );
+    }
+}
+
 __PACKAGE__
 
 __END__
