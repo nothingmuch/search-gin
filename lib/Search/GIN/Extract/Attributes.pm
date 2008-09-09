@@ -17,15 +17,15 @@ has attributes => (
 );
 
 sub extract_values {
-    my ( $self, $c, $obj, @args ) = @_;
+    my ( $self, $obj, @args ) = @_;
 
-    my @meta_attrs = $self->get_meta_attrs($c, $obj, @args);
+    my @meta_attrs = $self->get_meta_attrs($obj, @args);
 
-    return $self->process_keys( $c, { map { $_->name => $_->get_value($obj) } @meta_attrs } );
+    return $self->process_keys({ map { $_->name => $_->get_value($obj) } @meta_attrs });
 }
 
 sub get_meta_attrs {
-    my ( $self, $c, $obj, @args ) = @_;
+    my ( $self, $obj, @args ) = @_;
 
     my $class = ref $obj;
     my $meta = Class::MOP::get_metaclass_by_name($class);

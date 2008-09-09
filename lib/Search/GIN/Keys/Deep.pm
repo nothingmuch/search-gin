@@ -12,9 +12,9 @@ with qw(
 );
 
 sub process_keys {
-    my ( $self, $c, @keys ) = @_;
+    my ( $self, @keys ) = @_;
 
-    $self->join_keys( $c, $self->expand_keys( $c, @keys) );
+    $self->join_keys( $self->expand_keys(@keys) );
 }
 
 __PACKAGE__

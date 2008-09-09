@@ -25,16 +25,16 @@ has compare => (
 );
 
 sub extract_values {
-    my ( $self, $c ) = @_;
+    my $self = shift;
 
     return (
         method => "all",
-        values => [ $self->process_keys( $c, $self->attributes ) ],
+        values => [ $self->process_keys($self->attributes) ],
     );
 }
 
 sub consistent {
-    my ( $self, $c, $index, $obj ) = @_;
+    my ( $self, $index, $obj ) = @_;
 
     my $class = ref $obj;
 
@@ -53,11 +53,11 @@ sub consistent {
 
     my $cmp = $self->compare;
 
-    return $self->$cmp( $c, \%got, $query );
+    return $self->$cmp( \%got, $query );
 }
 
 sub compare_naive {
-    my ( $self, $c, $got, $exp ) = @_;
+    my ( $self, $got, $exp ) = @_;
 
     return unless keys %$got == keys %$exp;
 
@@ -69,7 +69,7 @@ sub compare_naive {
 }
 
 sub compare_test_deep {
-    my ( $self, $c, $got, $exp ) = @_;
+    my ( $self, $got, $exp ) = @_;
 
     require Test::Deep::NoTest;
     Test::Deep::NoTest::eq_deeply($got, $exp);

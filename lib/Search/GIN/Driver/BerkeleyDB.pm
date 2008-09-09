@@ -140,12 +140,12 @@ sub txn_rollback {
 
 # Search::GIN::Driver methods
 sub fetch_entry {
-    my ( $self, $c, $key ) = @_;
-    $self->get_ids($c, $key);
+    my ( $self, $key ) = @_;
+    $self->get_ids($key);
 }
 
 sub remove_ids {
-    my ( $self, $c, @ids ) = @_;
+    my ( $self, @ids ) = @_;
 
     my $pri = $self->primary_db;
 
@@ -156,7 +156,7 @@ sub remove_ids {
 }
 
 sub insert_entry {
-    my ( $self, $c, $id, @keys ) = @_;
+    my ( $self, $id, @keys ) = @_;
 
     my $pri = $self->primary_db;
 
@@ -167,7 +167,7 @@ sub insert_entry {
 
 # this method is just for completeness
 sub get_values {
-    my ( $self, $c, $id ) = @_;
+    my ( $self, $id ) = @_;
 
     my $v;
 
@@ -200,7 +200,7 @@ sub _key_only_guard ($) {
 # we iterate the duplicates, and if we wind up with more than $block_size then
 # we create an iterator for the remainder
 sub get_ids {
-    my ( $self, $c, $key ) = @_;
+    my ( $self, $key ) = @_;
 
     my $db = $self->secondary_db;
 

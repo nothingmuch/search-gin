@@ -11,13 +11,13 @@ sub gin_id {
 }
 
 sub gin_compare_values {
-    my ( $self, $c, $one, $two ) = @_;
+    my ( $self, $one, $two ) = @_;
     $one cmp $two;
 }
 
 sub gin_consistent {
-    my ( $self, $index, $c, $query, @args ) = @_;
-    $query->gin_consistent($index, $c, $self, @args);
+    my ( $self, $index, $query, @args ) = @_;
+    $query->gin_consistent($index, $self, @args);
 }
 
 __PACKAGE__
