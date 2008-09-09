@@ -7,13 +7,14 @@ use Data::Stream::Bulk::Util qw(bulk unique);
 
 use namespace::clean -except => [qw(meta)];
 
-with qw(Search::GIN::Driver);
+with qw(
+    Search::GIN::Driver
+    Search::GIN::Extract
+);
 
 requires qw(
     objects_to_ids
     ids_to_objects
-
-    extract_values
 );
 
 has distinct => (

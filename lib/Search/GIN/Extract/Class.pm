@@ -1,13 +1,16 @@
 #!/usr/bin/perl
 
 package Search::GIN::Extract::Class;
-use Moose::Role;
+use Moose;
 
 use MRO::Compat;
 
-use namespace::clean -except => [qw(meta)];
+use namespace::clean -except => 'meta';
 
-with qw(Search::GIN::Keys::Deep);
+with qw(
+    Search::GIN::Extract
+    Search::GIN::Keys::Deep
+);
 
 sub extract_values {
     my ( $self, $c, $obj, @args ) = @_;

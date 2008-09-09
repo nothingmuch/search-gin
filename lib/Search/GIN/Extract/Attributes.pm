@@ -1,11 +1,14 @@
 #!/usr/bin/perl
 
 package Search::GIN::Extract::Attributes;
-use Moose::Role;
+use Moose;
 
 use namespace::clean -except => 'meta';
 
-with qw(Search::GIN::Keys::Deep);
+with qw(
+    Search::GIN::Extract
+    Search::GIN::Keys::Deep
+);
 
 has attributes => (
     isa => "ArrayRef[Str]",

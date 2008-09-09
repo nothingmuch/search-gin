@@ -6,6 +6,7 @@ use warnings;
 use Test::More 'no_plan';
 
 use ok 'Search::GIN::Query::Attributes';
+use ok 'Search::GIN::Extract::Attributes';
 
 {
     package MyGIN;
@@ -16,7 +17,7 @@ use ok 'Search::GIN::Query::Attributes';
             Search::GIN::Core
             Search::GIN::Driver::Hash
             Search::GIN::SelfIDs
-            Search::GIN::Extract::Attributes
+            Search::GIN::Extract::Delegate
         ),
     );
 
@@ -39,7 +40,7 @@ use ok 'Search::GIN::Query::Attributes';
 }
 
 
-my $gin = MyGIN->new;
+my $gin = MyGIN->new( extract => Search::GIN::Extract::Attributes->new );
 
 my @objs = ( map { Foo->new($_) } { name => "stevan", age => 47 }, { name => "jon", age => 2 }, { name => "yuval", age => 2 } );
 

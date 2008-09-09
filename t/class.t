@@ -6,6 +6,7 @@ use warnings;
 use Test::More 'no_plan';
 
 use ok 'Search::GIN::Query::Class';
+use ok 'Search::GIN::Extract::Class';
 
 {
     package MyGIN;
@@ -16,7 +17,7 @@ use ok 'Search::GIN::Query::Class';
             Search::GIN::Core
             Search::GIN::Driver::Hash
             Search::GIN::SelfIDs
-            Search::GIN::Extract::Class
+            Search::GIN::Extract::Delegate
         ),
     );
 
@@ -51,7 +52,7 @@ use ok 'Search::GIN::Query::Class';
 }
 
 
-my $gin = MyGIN->new();
+my $gin = MyGIN->new( extract => Search::GIN::Extract::Class->new );
 
 my @objs = (
     Base->new,
