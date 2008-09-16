@@ -176,7 +176,7 @@ sub get_ids {
 
     my ( $pk, $v );
 
-    $self->manager->dup_cursor_to_stream(
+    $self->manager->dup_cursor_stream(
         cursor => $cursor,
         init => USE_PARTIAL && sub { _key_only_guard($db) },
         callback_first => sub {
