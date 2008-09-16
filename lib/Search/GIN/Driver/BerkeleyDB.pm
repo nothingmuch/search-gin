@@ -13,6 +13,7 @@ use constant USE_PARTIAL => 1; # not sure it's a good thing yet
 use MooseX::Types::Path::Class;
 
 use BerkeleyDB 0.35; # DBT_MULTIPLE, see http://rt.cpan.org/Ticket/Display.html?id=38896
+use BerkeleyDB::Manager;
 
 use namespace::clean -except => [qw(meta)];
 
@@ -42,20 +43,25 @@ has secondary_file => (
     default => sub { Path::Class::File->new("secondary.db") },
 );
 
-has env => (
-    isa => "BerkeleyDB::Env",
+has manager => (
+    isa => "BerkeleyDB::Manager",
     is  => "ro",
     lazy_build => 1,
+    # handles => "Search::GIN::Driver::TXN",
 );
 
-sub _build_env {
+sub _build_manager {
     my $self = shift;
 
-    BerkeleyDB::Env->new(
-        -Home  => $self->home,
-        -Flags => DB_CREATE | DB_INIT_MPOOL | DB_REGISTER | DB_RECOVER | DB_INIT_TXN,
+    BerkeleyDB::Manager->new(
+        home => $self->home,
     );
 }
+
+sub txn_begin { shift->manager->txn_begin(@_) }
+sub txn_commit { shift->manager->txn_commit(@_) }
+sub txn_rollback { shift->manager->txn_rollback(@_) }
+sub txn_do { shift->manager->txn_do(@_) }
 
 has [qw(primary_db secondary_db)] => (
     isa => "Object",
@@ -72,21 +78,23 @@ has block_size => (
 sub _build_primary_db {
     my $self = shift;
 
-    my $primary = $self->open_db( $self->primary_file );
+    my $m = $self->manager;
+
+    my $primary = $m->open_db( name => "primary", file => $self->primary_file );
 
     my $secondary = $self->secondary_db;
 
     my $weak_self = $self;
     weaken($weak_self); # don't leak (circular ref)
 
-    if( $primary->associate( $secondary, sub {
-        my ( $id, $vals ) = @_;
-        $_[2] = [ $weak_self->unpack_values($vals) ]; # YUCK WE HATES IT!!!
-
-        return 0;
-    } ) != 0 ) {
-        die $BerkeleyDB::Error;
-    }
+    $m->associate(
+        primary => $primary,
+        secondary => $secondary,
+        callback => sub {
+            my ( $id, $vals ) = @_;
+            return [ $weak_self->unpack_values($vals) ];
+        },
+    );
 
     return $primary;
 }
@@ -96,46 +104,8 @@ sub _build_primary_db {
 # modifications to primary_db
 sub _build_secondary_db {
     my $self = shift;
-    $self->open_db( $self->secondary_file, -Property => DB_DUP|DB_DUPSORT );
-}
 
-sub open_db {
-    my ( $self, $file, @args ) = @_;
-
-    BerkeleyDB::Btree->new( # FIXME allow hash too?
-        -Env      => $self->env,
-        -Filename => $file,
-        -Flags    => DB_CREATE|DB_AUTO_COMMIT, # autocommit allows us to work with or without txn_begin
-        -Txn      => undef,
-        @args,
-    ) || die $BerkeleyDB::Error;
-}
-
-# base methods for the TXN role
-sub txn_begin {
-    my ( $self, $parent_txn ) = @_;
-
-    my $txn = $self->env->TxnMgr->txn_begin($parent_txn || ());
-
-    $txn->Txn($self->primary_db, $self->secondary_db);
-
-    return $txn;
-}
-
-sub txn_commit {
-    my ( $self, $txn ) = @_;
-
-    unless ( $txn->txn_commit == 0 ) {
-        die $BerkeleyDB::Error;
-    }
-}
-
-sub txn_rollback {
-    my ( $self, $txn ) = @_;
-    
-    unless ( $txn->txn_abort == 0 ) {
-        die $BerkeleyDB::Error;
-    }
+    $self->manager->open_db( name => "secondary", file => $self->secondary_file, dup => 1, dupsort => 1 );
 }
 
 # Search::GIN::Driver methods
