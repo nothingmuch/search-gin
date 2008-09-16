@@ -3,17 +3,15 @@
 package Search::GIN::Driver::BerkeleyDB;
 use Moose::Role;
 
-use Data::Stream::Bulk::Util qw(bulk nil);
-use Data::Stream::Bulk::Callback;
-use Scalar::Util qw(weaken);
-use Scope::Guard;
 
-use constant USE_PARTIAL => 1; # not sure it's a good thing yet
+use Scalar::Util qw(weaken);
 
 use MooseX::Types::Path::Class;
 
 use BerkeleyDB 0.35; # DBT_MULTIPLE, see http://rt.cpan.org/Ticket/Display.html?id=38896
 use BerkeleyDB::Manager;
+
+use constant USE_PARTIAL => 1; # not sure it's a good thing yet
 
 use namespace::clean -except => [qw(meta)];
 
@@ -174,64 +172,33 @@ sub get_ids {
 
     my $db = $self->secondary_db;
 
-    my $g = USE_PARTIAL && _key_only_guard($db);
-
     my $cursor = $db->db_cursor;
-
-    my @matches;
 
     my ( $pk, $v );
 
-    if ( $cursor->c_pget( $key, $pk, $v, DB_SET ) == 0 ) {
-        push @matches, $pk;
+    $self->manager->dup_cursor_to_stream(
+        cursor => $cursor,
+        init => USE_PARTIAL && sub { _key_only_guard($db) },
+        callback_first => sub {
+            my ( $cursor, $ret ) = @_;
 
-        $cursor->c_count(my $cnt);
-
-        if ( $cnt > 1 ) { # more entries for the same value
-            my $block_size = $self->block_size;
-
-            # fetch up to one block
-            for ( 1 .. $block_size-1 ) {
-                if ( $cursor->c_pget( $key, $pk, $v, DB_NEXT_DUP ) == 0 ) {
-                    push @matches, $pk;
-                } else {
-                    return bulk(@matches);
-                }
+            if ( $cursor->c_pget( $key, $pk, $v, DB_SET ) == 0 ) {
+                push @$ret, $pk;
+                return 1;
+            } else {
+                return;
             }
-
-            # and defer the rest
-            return bulk(@matches)->cat( $self->_iter_read_cursor( $key, $db, $cursor, $block_size) );
-        }
-    }
-
-    return bulk(@matches);
-}
-
-# creates a Data::Stream::Bulk out of a BDB iterator
-sub _iter_read_cursor {
-    my ( $self, $key, $db, $cursor, $block_size ) = @_;
-
-    Data::Stream::Bulk::Callback->new(
-        callback => sub {
-            my ( $pk, $v, @matches );
-
-            return unless $cursor;
-
-            # sets up partial_set/partial_clear if enabled
-            my $g = USE_PARTIAL && _key_only_guard($db);
-
-            for ( 1 .. $block_size ) {
-                if ( $cursor->c_pget( $key, $pk, $v, DB_NEXT_DUP ) == 0 ) {
-                    push @matches, $pk;
-                } else {
-                    # we're done, this is the last block
-                    undef $cursor;
-                    return ( scalar(@matches) && \@matches );
-                }
-            }
-
-            return \@matches;
         },
+        callback => sub {
+            my ( $cursor, $ret ) = @_;
+
+            if ( $cursor->c_pget( $key, $pk, $v, DB_NEXT_DUP ) == 0 ) {
+                push @$ret, $pk;
+                return 1;
+            } else {
+                return;
+            }
+        }
     );
 }
 
