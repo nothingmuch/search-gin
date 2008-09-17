@@ -31,7 +31,7 @@ sub query {
         @args,
     );
 
-    my @spec = $query->extract_values;
+    my @spec = $query->extract_values($self);
 
     my $ids = $self->fetch_entries(@spec);
 
