@@ -48,3 +48,27 @@ is_deeply(
     [ sort qw(a:b foo:thingy:bar foo:thingy:gorch foo:thing) ],
     "complex",
 );
+
+is_deeply(
+    [ $foo->process_keys() ],
+    [ ],
+    "empty",
+);
+
+is_deeply(
+    [ $foo->process_keys( [ ] ) ],
+    [ ],
+    "empty",
+);
+
+is_deeply(
+    [ $foo->process_keys( { } ) ],
+    [ ],
+    "empty",
+);
+
+is_deeply(
+    [ $foo->process_keys( { foo => [] } ) ],
+    [ ],
+    "empty",
+);
