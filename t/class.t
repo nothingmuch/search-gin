@@ -7,6 +7,7 @@ use Test::More 'no_plan';
 
 use ok 'Search::GIN::Query::Class';
 use ok 'Search::GIN::Extract::Class';
+use ok 'Search::GIN::Query::Manual';
 
 {
     package MyGIN;
@@ -80,4 +81,7 @@ $gin->insert(@objs);
 }
 
 
-
+{
+    my @res = $gin->query( Search::GIN::Query::Manual->new( values => { class => "Foo" } ) )->all;
+    is_deeply( [ @res ], [ $objs[1] ] );
+}
