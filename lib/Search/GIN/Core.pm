@@ -56,7 +56,7 @@ sub insert {
     my @entries;
 
     foreach my $item ( @items ) {
-        my @keys = $self->extract_values($item);
+        my @keys = $self->extract_values( $item, gin => $self );
         my $id = shift @ids;
 
         $self->insert_entry( $id, @keys );
