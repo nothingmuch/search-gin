@@ -172,12 +172,10 @@ sub get_ids {
 
     my $db = $self->secondary_db;
 
-    my $cursor = $db->db_cursor;
-
     my ( $pk, $v );
 
     $self->manager->dup_cursor_stream(
-        cursor => $cursor,
+        db   => $db,
         init => USE_PARTIAL && sub { _key_only_guard($db) },
         callback_first => sub {
             my ( $cursor, $ret ) = @_;
