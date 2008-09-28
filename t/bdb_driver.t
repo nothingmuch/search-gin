@@ -25,7 +25,7 @@ use ok 'Search::GIN::Driver::BerkeleyDB';
     );
 }
 
-my $d = Drv->new( home => temp_root );
+my $d = Drv->new( manager => { home => temp_root, create => 1 } );
 
 my $id = "a" x 16;
 my @ids = map { $id++ } 1 .. 10;

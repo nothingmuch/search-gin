@@ -149,7 +149,10 @@ use Set::Object;
 
 
 my $gin = MyGIN->new(
-    home => temp_root,
+    manager => {
+        home => temp_root,
+        create => 1,
+    },
     file => "foo.idx",
     distinct => 1,
 );

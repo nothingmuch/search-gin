@@ -20,13 +20,6 @@ with qw(
     Search::GIN::Driver::Pack::Values
 );
 
-has home => (
-    isa => "Path::Class::Dir",
-    is  => "ro",
-    coerce   => 1,
-    required => 1,
-);
-
 has primary_file => (
     isa => "Path::Class::File",
     is  => "ro",
@@ -44,16 +37,14 @@ has secondary_file => (
 has manager => (
     isa => "BerkeleyDB::Manager",
     is  => "ro",
+    coerce => 1,
     lazy_build => 1,
     # handles => "Search::GIN::Driver::TXN",
 );
 
 sub _build_manager {
     my $self = shift;
-
-    BerkeleyDB::Manager->new(
-        home => $self->home,
-    );
+    BerkeleyDB::Manager->new()
 }
 
 sub txn_begin { shift->manager->txn_begin(@_) }
