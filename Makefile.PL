@@ -13,6 +13,7 @@ WriteMakefile(
     PREREQ_PM    => {
         'Moose' => 0,
         'MooseX::Types::Path::Class' => 0,
+        'MooseX::Types::Set::Object' => 0,
         'namespace::clean' => '0.08',
         'Data::Stream::Bulk' => "0.03",
         'BerkeleyDB::Manager' => 0,
