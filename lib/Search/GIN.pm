@@ -5,7 +5,7 @@ package Search::GIN;
 use strict;
 use warnings;
 
-our $VERSION = "0.01";
+our $VERSION = "0.02";
 
 __PACKAGE__
 
@@ -15,13 +15,17 @@ __END__
 
 =head1 NAME
 
-Search::GIN - 
+Search::GIN - Generalized Inverted Indexing
 
 =head1 SYNOPSIS
 
-	use Search::GIN;
+	# Coming Soon
 
 =head1 DESCRIPTION
+
+This is used by L<KiokuDB> for custom indexing.
+
+More documentation will be released shortly.
 
 =cut
 
