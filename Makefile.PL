@@ -16,8 +16,6 @@ WriteMakefile(
         'MooseX::Types::Set::Object' => 0,
         'namespace::clean' => '0.08',
         'Data::Stream::Bulk' => "0.03",
-        'BerkeleyDB::Manager' => 0,
-        'BerkeleyDB' => 0.35, # multiple keys
         'Scope::Guard' => 0,
         'Set::Object' => 0,
         'Test::use::ok' => 0,

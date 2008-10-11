@@ -42,6 +42,7 @@ sub remove_ids {
 
     my @key_sets = grep { defined } delete @{$objects}{map { ref() ? refaddr($_) : $_ } @ids};
     return unless @key_sets;
+	warn "key sets: @key_sets";
     my $keys = (shift @key_sets)->union(@key_sets);
 
     foreach my $key ( $keys->members ) {

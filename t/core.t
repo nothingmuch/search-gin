@@ -22,42 +22,13 @@ use Set::Object;
     # on disk index:
     with (
         qw(
-            Search::GIN::DelegateToIndexed
-            Search::GIN::Driver::BerkeleyDB
-        ),
-        'Search::GIN::Driver::Pack::Length' => {
-            alias => {
-                pack_length   => "pack_values",
-                unpack_length => "unpack_values",
-            }
-        },
-    );
-
-    # DelegateToIndexed means we delegate everything to Query and Indexable
-    # there's also Callbacks, and presumably custom impls
-
-    # PackUUID is because BerkeleyDB is ondisk
-    # it's an implementation of pack_ids and unpack_ids that uses unpack/pack
-    # on constant width strings
-
-    # the only required method left after all these roles were added
-    # we fake it here, but it should go to the storage backend
-    sub ids_to_objects {
-        my ( $self, @ids ) = @_;
-        @{ $self->objects }{@ids};
-    }
-
-    around objects_to_ids => sub {
-        my ( $next, $self, @objs ) = @_;
-        my @ids = $self->$next(@objs);
-        @{ $self->objects }{@ids} = @objs;
-        return @ids;
-    };
-
-    has objects => (
-        isa => "HashRef",
-        is  => "rw",
-        default => sub { {} },
+            Search::GIN::Core
+            Search::GIN::Driver::Hash
+            Search::GIN::SelfIDs
+		),
+		'Search::GIN::DelegateToIndexed' => {
+			excludes => "objects_to_ids", # SelfIDs
+		},
     );
 
     # you create the query objects, the GIN implementation uses them
