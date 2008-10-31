@@ -24,6 +24,15 @@ has objects => (
     default => sub { {} },
 );
 
+sub clear {
+    my $self = shift;
+
+    %{ $self->values } = ();
+    %{ $self->objects } = ();
+
+    return;
+}
+
 sub fetch_entry {
     my ( $self, $key ) = @_;
 
