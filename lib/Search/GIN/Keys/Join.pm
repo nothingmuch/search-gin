@@ -10,7 +10,7 @@ sub join_keys {
 
 sub join_key {
     my ( $self, @key ) = @_;
-
+    no warnings 'uninitialized';
     join ":", map { ref($_) ? @$_ : $_ } @key;
 }
 
