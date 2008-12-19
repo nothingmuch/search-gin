@@ -14,9 +14,9 @@ has extractors => (
 );
 
 sub extract_values {
-    my ( $self, @args ) = @_;
+    my ( $self, $obj, @args ) = @_;
 
-    return map { $_->extract_values } @{ $self->extractors };
+    return map { $_->extract_values($obj, @args) } @{ $self->extractors };
 }
 
 __PACKAGE__->meta->make_immutable;
