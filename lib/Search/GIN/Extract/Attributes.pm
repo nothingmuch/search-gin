@@ -36,7 +36,7 @@ sub get_meta_attrs {
     if ( $self->has_attributes ) {
         return grep { defined } map { $meta->find_attribute_by_name($_) } @{ $self->attributes };
     } else {
-        return $meta->compute_all_applicable_attributes;
+        return $meta->get_all_attributes;
     }
 }
 
