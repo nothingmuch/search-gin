@@ -27,6 +27,11 @@ This is used by L<KiokuDB> for custom indexing.
 
 More documentation will be released shortly.
 
-=cut
+=head1 COPYRIGHT
 
+    Copyright (c) 2008, 2009 Yuval Kogman, Infinity Interactive. All
+    rights reserved This program is free software; you can redistribute
+    it and/or modify it under the same terms as Perl itself.
+
+=cut
 
