@@ -38,11 +38,12 @@ sub _build__processed {
 }
 
 sub extract_values {
-    my $self = shift;
+    my $self  = shift;
+    my $EMPTY = q{};
 
     return (
         values => $self->_processed,
-        $self->has_method ? ( method => $self->method ) : (),
+        method => $self->has_method ? $self->method : $EMPTY,
     );
 }
 
