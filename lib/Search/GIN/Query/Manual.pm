@@ -81,8 +81,7 @@ Search::GIN::Query::Manual - Create manual GIN queries
 
 =head1 DESCRIPTION
 
-Creates a manual GIN query that can be used to search records in a KiokuDB
-storage.
+Creates a manual GIN query that can be used to search records in a storage.
 
 Unlike the stock GIN queries (L<Search::GIN::Query::Class>,
 L<Search::GIN::Query::Attributes>), with this object you define your search
