@@ -98,14 +98,53 @@ __END__
 
 =head1 NAME
 
-Search::GIN::Query::Class - 
+Search::GIN::Query::Class - Create class-based GIN queries
 
 =head1 SYNOPSIS
 
-	use Search::GIN::Query::Class;
+    use Search::GIN::Query::Class;
+
+    my $query = Search::GIN::Query::Class->new(
+        class => 'Person',
+    );
 
 =head1 DESCRIPTION
 
+Creates a class-based GIN query that can be used to search records in a storage.
+
+This is a ready-to-use query that uses class definitions (specifically C<class>,
+C<does> and C<blessed>) to search through the storage.
+
+=head1 METHODS/SUBROUTINES
+
+=head2 new
+
+Creates a new query.
+
+=head1 ATTRIBUTES
+
+=head2 class
+
+The class of the object you want to find.
+
+    my $query = Search::GIN::Query::Class->new(
+        class => 'Person',
+    );
+
+=head2 does
+
+A role consumed by the object you want to find.
+
+    my $query = Search::GIN::Query::Class->new(
+        does => 'TheMonkey',
+    );
+
+=head2 blessed
+
+The name of the package that the object is blessed into.
+
+    my $query = Search::GIN::Query::Class->new(
+        blessed => 'Person',
+    );
+
 =cut
-
-
