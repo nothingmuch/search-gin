@@ -82,3 +82,48 @@ __PACKAGE__->meta->make_immutable;
 __PACKAGE__
 
 __END__
+
+=pod
+
+=head1 NAME
+
+Search::GIN::Query::Attributes - Create attributes-based GIN queries
+
+=head1 SYNOPSIS
+
+    use Search::GIN::Query::Attributes;
+
+    my $query = Search::GIN::Query::Attributes->new(
+        attributes => {
+            name => 'Homer',
+        },
+    );
+
+=head1 DESCRIPTION
+
+Creates an attributes-based GIN query that can be used to search records in a
+storage.
+
+This is a ready-to-use query that uses an object's attributes to search through
+the storage.
+
+=head1 METHODS/SUBROUTINES
+
+=head2 new
+
+Creates a new query.
+
+=head1 ATTRIBUTES
+
+=head2 attributes
+
+Attributes of the object you want to find.
+
+    my $query = Search::GIN::Query::Attributes->new(
+        attributes => {
+            name => 'Homer',
+            city => 'Springfield',
+        },
+    );
+
+=cut
