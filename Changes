@@ -1,0 +1,6 @@
+0.04    04.03.10
+    - Safer attribute extraction
+    - Multiplex extraction now works
+    - Documentation for query modules
+    - Fixed bug in manual query returning empty list
+    - Updated copyright
