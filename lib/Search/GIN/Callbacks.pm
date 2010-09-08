@@ -23,14 +23,11 @@ __END__
 
 =head1 NAME
 
-Search::GIN::Callbacks - 
-
-=head1 SYNOPSIS
-
-    use Search::GIN::Callbacks;
+Search::GIN::Callbacks - Provide callbacks
 
 =head1 DESCRIPTION
 
-=cut
+This role provides a few callbacks for L<Search::GIN>.
 
+=cut
 
