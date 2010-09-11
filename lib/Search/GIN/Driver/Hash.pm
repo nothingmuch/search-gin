@@ -1,6 +1,8 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Driver::Hash;
+# ABSTRACT:
+
 use Moose::Role;
 
 use Set::Object;
@@ -78,6 +80,6 @@ sub insert_entry {
     }
 }
 
-__PACKAGE__
+1;
 
 __END__

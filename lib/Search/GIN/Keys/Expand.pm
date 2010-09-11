@@ -1,10 +1,10 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Keys::Expand;
+# ABSTRACT:
+
 use Moose::Role;
-
 use Carp qw(croak);
-
 use namespace::clean -except => 'meta';
 
 sub expand_keys {
@@ -50,6 +50,6 @@ sub expand_keys_hash {
     } keys %$hash;
 }
 
-__PACKAGE__
+1;
 
 __END__

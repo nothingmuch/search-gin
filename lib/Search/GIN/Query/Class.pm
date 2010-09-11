@@ -1,10 +1,10 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Query::Class;
+# ABSTRACT: Create class-based GIN queries
+
 use Moose;
-
 use Carp qw(croak);
-
 use namespace::clean -except => [qw(meta)];
 
 with qw(
@@ -90,15 +90,9 @@ sub check_object {
 
 __PACKAGE__->meta->make_immutable;
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Query::Class - Create class-based GIN queries
 
 =head1 SYNOPSIS
 
@@ -147,4 +141,3 @@ The name of the package that the object is blessed into.
         blessed => 'Person',
     );
 
-=cut

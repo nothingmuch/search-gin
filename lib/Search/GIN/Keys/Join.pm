@@ -1,6 +1,8 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Keys::Join;
+# ABSTRACT:
+
 use Moose::Role;
 
 sub join_keys {
@@ -14,7 +16,7 @@ sub join_key {
     join ":", map { ref($_) ? @$_ : $_ } @key;
 }
 
-__PACKAGE__
+1;
 
 __END__
 

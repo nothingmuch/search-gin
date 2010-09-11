@@ -1,12 +1,13 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Keys;
-use Moose::Role;
+# ABSTRACT:
 
+use Moose::Role;
 use namespace::clean -except => 'meta';
 
 requires qw(process_keys);
 
-__PACKAGE__
+1;
 
 __END__

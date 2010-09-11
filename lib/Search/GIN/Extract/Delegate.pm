@@ -1,8 +1,9 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Extract::Delegate;
-use Moose::Role;
+# ABSTRACT:
 
+use Moose::Role;
 use namespace::clean -except => 'meta';
 
 has extract => (
@@ -14,6 +15,6 @@ has extract => (
 
 sub extract_values { shift->extract->extract_values(@_) }
 
-__PACKAGE__
+1;
 
 __END__

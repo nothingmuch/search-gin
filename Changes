@@ -1,3 +1,11 @@
+0.06    11.09.10
+    - Whoops, missed a debug output
+
+0.05    11.09.10
+    - Adding a bit more docs
+    - Moved to Dist::Zilla
+    - Fixing SIGNATURE file (sorry sorry sorry)
+
 0.04    04.03.10
     - Safer attribute extraction
     - Multiplex extraction now works

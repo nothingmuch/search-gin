@@ -1,6 +1,8 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Core;
+# ABSTRACT: Core of Search::GIN
+
 use Moose::Role;
 
 use Data::Stream::Bulk::Util qw(bulk unique);
@@ -63,6 +65,6 @@ sub insert {
     }
 }
 
-__PACKAGE__
+1;
 
 __END__

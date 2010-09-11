@@ -1,10 +1,10 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Query::Attributes;
+# ABSTRACT: Create attributes-based GIN queries
+
 use Moose;
-
 use Carp qw(croak);
-
 use namespace::clean -except => [qw(meta)];
 
 with qw(
@@ -79,15 +79,9 @@ sub compare_test_deep {
 
 __PACKAGE__->meta->make_immutable;
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Query::Attributes - Create attributes-based GIN queries
 
 =head1 SYNOPSIS
 
@@ -126,4 +120,3 @@ Attributes of the object you want to find.
         },
     );
 
-=cut

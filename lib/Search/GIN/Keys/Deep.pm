@@ -1,8 +1,9 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Keys::Deep;
-use Moose::Role;
+# ABSTRACT:
 
+use Moose::Role;
 use namespace::clean -except => 'meta';
 
 with qw(
@@ -17,22 +18,13 @@ sub process_keys {
     $self->join_keys( $self->expand_keys(@keys) );
 }
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Keys::Deep - 
 
 =head1 SYNOPSIS
 
 	with qw(Search::GIN::Keys::Deep);
 
 =head1 DESCRIPTION
-
-=cut
-
 

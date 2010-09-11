@@ -1,6 +1,8 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::DelegateToIndexed;
+# ABSTRACT:
+
 use Moose::Role;
 
 use namespace::clean -except => 'meta';
@@ -24,22 +26,13 @@ sub objects_to_ids {
     map { $_->gin_id } @objs;
 }
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::DelegateToIndexed - 
 
 =head1 SYNOPSIS
 
     use Search::GIN::DelegateToIndexed;
 
 =head1 DESCRIPTION
-
-=cut
-
 

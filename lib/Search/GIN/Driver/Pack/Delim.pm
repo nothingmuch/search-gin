@@ -1,6 +1,8 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Driver::Pack::Delim;
+# ABSTRACT:
+
 use Moose::Role;
 
 use namespace::clean -except => [qw(meta)];
@@ -15,6 +17,6 @@ sub unpack_delim {
     split("\0", $string );
 }
 
-__PACKAGE__
+1;
 
 __END__

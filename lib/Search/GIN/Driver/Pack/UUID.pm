@@ -1,6 +1,8 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Driver::Pack::UUID;
+# ABSTRACT: UUID key packing
+
 use Moose::Role;
 
 use namespace::clean -except => [qw(meta)];
@@ -17,22 +19,13 @@ sub pack_ids {
     pack("(a16)*", @ids); # FIXME enforce size
 }
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Driver::PackUUID - UUID key packing
 
 =head1 SYNOPSIS
 
     use Search::GIN::Driver::PackUUID;
 
 =head1 DESCRIPTION
-
-=cut
-
 

@@ -1,8 +1,9 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Extract::Multiplex;
-use Moose;
+# ABSTRACT:
 
+use Moose;
 use namespace::clean -except => 'meta';
 
 with qw(Search::GIN::Extract);
@@ -21,22 +22,13 @@ sub extract_values {
 
 __PACKAGE__->meta->make_immutable;
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Extract::Multiplex - 
 
 =head1 SYNOPSIS
 
 	use Search::GIN::Extract::Multiplex;
 
 =head1 DESCRIPTION
-
-=cut
-
 

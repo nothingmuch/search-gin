@@ -1,6 +1,8 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Callbacks;
+# ABSTRACT: Provide callbacks
+
 use Moose::Role;
 
 with qw(Search::GIN::Core);
@@ -15,19 +17,11 @@ foreach my $cb qw(objects_to_ids extract_values extract_query compare_values con
     eval "sub $cb { \$self->${cb}_callback->(@_) }";
 }
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Callbacks - Provide callbacks
 
 =head1 DESCRIPTION
 
 This role provides a few callbacks for L<Search::GIN>.
-
-=cut
 

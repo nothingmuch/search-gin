@@ -1,8 +1,9 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Extract::Attributes;
-use Moose;
+# ABSTRACT:
 
+use Moose;
 use namespace::clean -except => 'meta';
 
 with qw(
@@ -40,22 +41,13 @@ sub get_meta_attrs {
     }
 }
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Extract::Attributes - 
 
 =head1 SYNOPSIS
 
 	use Search::GIN::Extract::Attributes;
 
 =head1 DESCRIPTION
-
-=cut
-
 

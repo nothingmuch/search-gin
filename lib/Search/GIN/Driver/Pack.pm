@@ -1,6 +1,8 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Driver::Pack;
+# ABSTRACT:
+
 use Moose::Role;
 
 with qw(
@@ -8,6 +10,6 @@ with qw(
     Search::GIN::Driver::Pack::IDs
 );
 
-__PACKAGE__
+1;
 
 __END__

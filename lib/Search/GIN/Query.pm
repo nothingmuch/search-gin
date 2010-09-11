@@ -1,8 +1,9 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Query;
-use Moose::Role;
+# ABSTRACT:
 
+use Moose::Role;
 use namespace::clean -except => [qw(meta)];
 
 requires qw(
@@ -10,22 +11,13 @@ requires qw(
     extract_values
 );
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Query - 
 
 =head1 SYNOPSIS
 
     use Search::GIN::Query;
 
 =head1 DESCRIPTION
-
-=cut
-
 

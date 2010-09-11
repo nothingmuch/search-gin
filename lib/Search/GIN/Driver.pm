@@ -1,6 +1,8 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Driver;
+# ABSTRACT:
+
 use Moose::Role;
 
 use Data::Stream::Bulk::Util qw(bulk nil cat unique);
@@ -76,22 +78,13 @@ sub fetch_entries_all {
     return bulk( grep { $seen{$_} == $n } $last->all );
 }
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Driver - 
 
 =head1 SYNOPSIS
 
     use Search::GIN::Driver;
 
 =head1 DESCRIPTION
-
-=cut
-
 

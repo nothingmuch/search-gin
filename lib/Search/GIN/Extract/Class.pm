@@ -1,10 +1,10 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Extract::Class;
+# ABSTRACT:
+
 use Moose;
-
 use MRO::Compat;
-
 use namespace::clean -except => 'meta';
 
 with qw(
@@ -29,22 +29,13 @@ sub extract_values {
     });
 }
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Extract::Class - 
 
 =head1 SYNOPSIS
 
 	use Search::GIN::Extract::Class;
 
 =head1 DESCRIPTION
-
-=cut
-
 

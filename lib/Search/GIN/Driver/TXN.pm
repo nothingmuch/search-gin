@@ -1,6 +1,8 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Driver::TXN;
+# ABSTRACT:
+
 use Moose::Role;
 
 use Scope::Guard;
@@ -76,23 +78,13 @@ sub txn_do {
     }
 }
 
-
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Driver::TXN - 
 
 =head1 SYNOPSIS
 
     use Search::GIN::Driver::TXN;
 
 =head1 DESCRIPTION
-
-=cut
-
 

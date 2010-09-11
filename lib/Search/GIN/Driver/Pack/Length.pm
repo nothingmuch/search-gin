@@ -1,6 +1,8 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Driver::Pack::Length;
+# ABSTRACT:
+
 use Moose::Role;
 
 use namespace::clean -except => [qw(meta)];
@@ -15,22 +17,13 @@ sub unpack_length {
     unpack("(n/a*)*", $string);
 }
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Driver::PackLength - 
 
 =head1 SYNOPSIS
 
 	use Search::GIN::Driver::PackLength;
 
 =head1 DESCRIPTION
-
-=cut
-
 

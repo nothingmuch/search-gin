@@ -1,8 +1,9 @@
-#!/usr/bin/perl
-
+use strict;
+use warnings;
 package Search::GIN::Query::Manual;
-use Moose;
+# ABSTRACT: Create manual GIN queries
 
+use Moose;
 use namespace::clean -except => 'meta';
 
 with qw(
@@ -59,15 +60,9 @@ sub consistent {
 
 __PACKAGE__->meta->make_immutable;
 
-__PACKAGE__
+1;
 
 __END__
-
-=pod
-
-=head1 NAME
-
-Search::GIN::Query::Manual - Create manual GIN queries
 
 =head1 SYNOPSIS
 
@@ -98,7 +93,4 @@ Creates a new query.
 =head2 values
 
 The keys and values to build the query for.
-
-=cut
-
 
