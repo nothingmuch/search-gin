@@ -30,7 +30,9 @@ use Set::Object;
 			excludes => "objects_to_ids", # SelfIDs
 		},
     );
+}
 
+{
     # you create the query objects, the GIN implementation uses them
     # consistently with the index
     package MyTagQuery;
@@ -53,7 +55,8 @@ use Set::Object;
             values => [ $self->tags->members ],
         );
     }
-
+}
+{
     package MyTagQuery::Intersection;
     use Moose;
 
@@ -73,7 +76,8 @@ use Set::Object;
     };
 
     __PACKAGE__->meta->make_immutable;
-
+}
+{
     package MyTagQuery::Union;
     use Moose;
 
@@ -85,7 +89,8 @@ use Set::Object;
     }
 
     __PACKAGE__->meta->make_immutable;
-
+}
+{
     # this is an indexable object
     package MyObject;
     use Moose;
