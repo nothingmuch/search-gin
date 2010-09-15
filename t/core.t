@@ -27,7 +27,7 @@ use Set::Object;
             Search::GIN::SelfIDs
 		),
 		'Search::GIN::DelegateToIndexed' => {
-			excludes => "objects_to_ids", # SelfIDs
+			-excludes => "objects_to_ids", # SelfIDs
 		},
     );
 }
