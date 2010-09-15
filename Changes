@@ -1,5 +1,6 @@
 0.07
         * Renaming excludes to -excludes, requiring Moose >= 0.89
+        * Removing special deprecated usage of qw (now complies with 5.13.5)
 
 0.06    11.09.10
     - Whoops, missed a debug output
