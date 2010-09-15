@@ -7,7 +7,9 @@ use Moose::Role;
 
 with qw(Search::GIN::Core);
 
-foreach my $cb qw(objects_to_ids extract_values extract_query compare_values consistent ids_to_objects) {
+foreach my $cb (
+    qw(objects_to_ids extract_values extract_query compare_values
+        consistent ids_to_objects) ) {
     has "${cb}_callback" => (
         isa => "CodeRef",
         is  => "rw",
